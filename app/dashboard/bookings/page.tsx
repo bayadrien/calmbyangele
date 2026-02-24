@@ -7,6 +7,7 @@ import {
   addDoc,
   getDocs,
 } from "firebase/firestore";
+import Navbar from "@/components/Navbar";
 
 export default function BookingsPage() {
   const [dogs, setDogs] = useState<any[]>([]);
@@ -75,7 +76,9 @@ export default function BookingsPage() {
     fetchBookings();
   };
 
+  
   return (
+    
     <div className="min-h-screen bg-purple-100 p-8">
       <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-8">
         <h1 className="text-2xl font-bold text-purple-900 mb-6">

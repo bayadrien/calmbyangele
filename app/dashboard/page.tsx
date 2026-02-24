@@ -1,89 +1,107 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { auth } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Dashboard() {
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        router.push("/login");
-      } else {
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [router]);
-
-  if (loading) {
-    return (
-      <p className="text-purple-700">Chargement...</p>
-    );
-  }
-
   return (
-    <>
-      <h1 className="text-3xl font-bold text-purple-900 mb-10">
-        Tableau de bord
-      </h1>
+    <div className="space-y-10">
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        <a
-          href="/dashboard/owners"
-          className="bg-purple-50 hover:bg-purple-100 p-6 rounded-2xl shadow transition"
-        >
-          <h2 className="text-xl font-semibold text-purple-900 mb-2">
-            👩‍🦰 Maîtres
-          </h2>
-          <p className="text-gray-700">
-            Gestion des propriétaires
-          </p>
-        </a>
-
-        <a
-          href="/dashboard/dogs"
-          className="bg-purple-50 hover:bg-purple-100 p-6 rounded-2xl shadow transition"
-        >
-          <h2 className="text-xl font-semibold text-purple-900 mb-2">
-            🐾 Animaux
-          </h2>
-          <p className="text-gray-700">
-            Gestion des fiches chiens
-          </p>
-        </a>
-
-        <a
-          href="/dashboard/bookings"
-          className="bg-purple-50 hover:bg-purple-100 p-6 rounded-2xl shadow transition"
-        >
-          <h2 className="text-xl font-semibold text-purple-900 mb-2">
-            🗓 Séjours
-          </h2>
-          <p className="text-gray-700">
-            Historique des gardes
-          </p>
-        </a>
-
-        <a
-          href="/dashboard/photos"
-          className="bg-purple-50 hover:bg-purple-100 p-6 rounded-2xl shadow transition"
-        >
-          <h2 className="text-xl font-semibold text-purple-900 mb-2">
-            📸 Photos
-          </h2>
-          <p className="text-gray-700">
-            Galerie des souvenirs
-          </p>
-        </a>
-
+      {/* HERO */}
+      <div className="bg-gradient-to-r from-purple-200 to-purple-100 p-8 rounded-3xl shadow-md">
+        <h1 className="text-3xl font-bold text-purple-900 mb-2">
+          Bienvenue sur CALM 💜
+        </h1>
+        <p className="text-purple-800">
+          Centre de gestion des gardes & animaux
+        </p>
       </div>
-    </>
+
+      {/* STATS RAPIDES */}
+      <div className="grid grid-cols-4 gap-6">
+        <StatCard title="Animaux actifs" value="--" />
+        <StatCard title="Gardes à venir" value="--" />
+        <StatCard title="Aujourd’hui" value="--" />
+        <StatCard title="Ce mois" value="-- €" />
+      </div>
+
+      {/* RACCOURCIS */}
+      <div>
+        <h2 className="text-xl font-semibold text-purple-900 mb-4">
+          Accès rapide
+        </h2>
+
+        <div className="grid grid-cols-3 gap-6">
+          <QuickCard
+            href="/dashboard/dogs"
+            title="🐾 Animaux"
+            desc="Fiches complètes & documents"
+          />
+          <QuickCard
+            href="/dashboard/owners"
+            title="👤 Maîtres"
+            desc="Gestion des propriétaires"
+          />
+          <QuickCard
+            href="/dashboard/calendar"
+            title="📅 Calendrier"
+            desc="Planning & statistiques"
+          />
+        </div>
+      </div>
+
+      {/* ACTIVITÉ RÉCENTE */}
+      <div className="bg-white p-6 rounded-2xl shadow">
+        <h2 className="text-xl font-semibold mb-4 text-purple-900">
+          Activité récente
+        </h2>
+        <p className="text-gray-600">
+          Les dernières gardes et ajouts apparaîtront ici bientôt.
+        </p>
+      </div>
+
+    </div>
+  );
+}
+
+/* =========================
+   COMPONENTS
+========================= */
+
+function StatCard({
+  title,
+  value,
+}: {
+  title: string;
+  value: string;
+}) {
+  return (
+    <div className="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
+      <p className="text-sm text-gray-600">{title}</p>
+      <p className="text-2xl font-bold text-purple-800 mt-2">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function QuickCard({
+  href,
+  title,
+  desc,
+}: {
+  href: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="bg-purple-50 p-6 rounded-2xl shadow hover:shadow-lg hover:bg-purple-100 transition block"
+    >
+      <h3 className="text-lg font-semibold text-purple-800 mb-2">
+        {title}
+      </h3>
+      <p className="text-gray-600 text-sm">{desc}</p>
+    </Link>
   );
 }
