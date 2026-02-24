@@ -5,6 +5,10 @@ import Link from "next/link";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
+const handleLogout = async () => {
+  await signOut(auth)
+}
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
 
@@ -47,7 +51,7 @@ export default function Navbar() {
           <NavLink href="/dashboard/photos" label="📸 Photos" close={() => setOpen(false)} />
 
           <button
-            onClick={() => signOut(auth)}
+            onClick={handleLogout}
             className="text-red-500 mt-8"
           >
             🚪 Déconnexion
