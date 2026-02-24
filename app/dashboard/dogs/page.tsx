@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 
-export default function DogsPage() {
+export default function AnimalsPage() {
   const [owners, setOwners] = useState<any[]>([]);
-  const [dogs, setDogs] = useState<any[]>([]);
+  const [animals, setAnimals] = useState<any[]>([]);
 
   const [form, setForm] = useState({
     nom: "",
+    type: "chien",
     race: "",
     dateNaissance: "",
     ownerId: "",
@@ -24,18 +25,18 @@ export default function DogsPage() {
     setOwners(data);
   };
 
-  const fetchDogs = async () => {
+  const fetchAnimals = async () => {
     const snapshot = await getDocs(collection(db, "dogs"));
     const data = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-    setDogs(data);
+    setAnimals(data);
   };
 
   useEffect(() => {
     fetchOwners();
-    fetchDogs();
+    fetchAnimals();
   }, []);
 
   const generateSlug = (name: string) => {
@@ -62,83 +63,123 @@ export default function DogsPage() {
 
     setForm({
       nom: "",
+      type: "chien",
       race: "",
       dateNaissance: "",
       ownerId: "",
     });
 
-    fetchDogs();
+    fetchAnimals();
+  };
+
+  const getEmoji = (type: string) => {
+    switch (type) {
+      case "chat":
+        return "🐱";
+      case "lapin":
+        return "🐰";
+      case "autre":
+        return "🐾";
+      default:
+        return "🐶";
+    }
   };
 
   return (
-    <div className="min-h-screen bg-purple-100 p-8">
-      <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-8">
-        <h1 className="text-2xl font-bold text-purple-700 mb-6">
-          Gestion des Chiens
-        </h1>
+    <>
+      <h1 className="text-2xl font-bold text-purple-900 mb-8">
+        Gestion des Animaux
+      </h1>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 mb-8">
-          <input
-            placeholder="Nom"
-            value={form.nom}
-            onChange={(e) => setForm({ ...form, nom: e.target.value })}
-            className="border border-purple-200 p-2 rounded-lg text-gray-800"
-          />
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
 
-          <input
-            placeholder="Race"
-            value={form.race}
-            onChange={(e) => setForm({ ...form, race: e.target.value })}
-            className="border border-purple-200 p-2 rounded-lg text-gray-800"
-          />
+        <select
+          value={form.type}
+          onChange={(e) =>
+            setForm({ ...form, type: e.target.value })
+          }
+          className="border border-purple-300 bg-white p-3 rounded-xl text-gray-900"
+        >
+          <option value="chien">🐶 Chien</option>
+          <option value="chat">🐱 Chat</option>
+          <option value="lapin">🐰 Lapin</option>
+          <option value="autre">🐾 Autre</option>
+        </select>
 
-          <input
-            type="date"
-            value={form.dateNaissance}
-            onChange={(e) =>
-              setForm({ ...form, dateNaissance: e.target.value })
-            }
-            className="border border-purple-200 p-2 rounded-lg text-gray-800"
-          />
+        <input
+          placeholder="Nom"
+          value={form.nom}
+          onChange={(e) =>
+            setForm({ ...form, nom: e.target.value })
+          }
+          className="border border-purple-300 bg-white p-3 rounded-xl text-gray-900"
+        />
 
-          <select
-            value={form.ownerId}
-            onChange={(e) =>
-              setForm({ ...form, ownerId: e.target.value })
-            }
-            className="border border-purple-200 p-2 rounded-lg text-gray-800"
-          >
-            <option value="">Sélectionner un maître</option>
-            {owners.map((owner) => (
-              <option key={owner.id} value={owner.id}>
-                {owner.prenom} {owner.nom}
-              </option>
-            ))}
-          </select>
+        <input
+          placeholder="Race / Espèce"
+          value={form.race}
+          onChange={(e) =>
+            setForm({ ...form, race: e.target.value })
+          }
+          className="border border-purple-300 bg-white p-3 rounded-xl text-gray-900"
+        />
 
-          <button
-            type="submit"
-            className="col-span-2 bg-purple-500 text-white p-3 rounded-xl"
-          >
-            Ajouter le chien
-          </button>
-        </form>
+        <input
+          type="date"
+          value={form.dateNaissance}
+          onChange={(e) =>
+            setForm({ ...form, dateNaissance: e.target.value })
+          }
+          className="border border-purple-300 bg-white p-3 rounded-xl text-gray-900"
+        />
 
-        <div>
-          {dogs.map((dog) => (
-            <div
-              key={dog.id}
-              className="bg-purple-100 p-4 rounded-xl mb-3 shadow-md border border-purple-200"
-            >
-              <p className="font-semibold text-purple-900 text-lg">{dog.nom}</p>
-              <p className="text-sm text-gray-800">{dog.race}</p>
-              <p className="text-xs text-gray-700">
-                Slug: {dog.slug} | MDP: {dog.motDePasse}
-              </p>
-            </div>
+        <select
+          value={form.ownerId}
+          onChange={(e) =>
+            setForm({ ...form, ownerId: e.target.value })
+          }
+          className="border border-purple-300 bg-white p-3 rounded-xl text-gray-900 md:col-span-2"
+        >
+          <option value="">Sélectionner un maître</option>
+          {owners.map((owner) => (
+            <option key={owner.id} value={owner.id}>
+              {owner.prenom} {owner.nom}
+            </option>
           ))}
-        </div>
+        </select>
+
+        <button
+          type="submit"
+          className="md:col-span-2 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-xl shadow-md transition"
+        >
+          Ajouter l’animal
+        </button>
+      </form>
+
+      <div className="space-y-4">
+        {animals.map((animal) => (
+          <div
+            key={animal.id}
+            className="bg-purple-50 p-5 rounded-2xl shadow border border-purple-200"
+          >
+            <p className="font-semibold text-purple-900 text-lg">
+              {getEmoji(animal.type)} {animal.nom}
+            </p>
+            <p className="text-sm text-gray-800">
+              {animal.race}
+            </p>
+            <p className="text-xs text-gray-600 mt-2">
+              Slug : {animal.slug} | MDP : {animal.motDePasse}
+            </p>
+            <a
+                href={`/dashboard/dogs/${animal.id}`}
+                className="text-purple-700 text-sm underline"
+            >
+                Voir la fiche admin →
+            </a>
+          </div>
+        ))}
       </div>
-    </div>
+    </>
   );
 }

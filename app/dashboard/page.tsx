@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
@@ -23,57 +23,67 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-purple-100">
-        <p className="text-purple-700">Chargement...</p>
-      </div>
+      <p className="text-purple-700">Chargement...</p>
     );
   }
 
   return (
-    <div className="min-h-screen bg-purple-100 p-8">
-      <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-purple-700">
-            Dashboard CALM
-          </h1>
-          <button
-            onClick={() => signOut(auth)}
-            className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-xl transition"
-          >
-            Déconnexion
-          </button>
-        </div>
+    <>
+      <h1 className="text-3xl font-bold text-purple-900 mb-10">
+        Tableau de bord
+      </h1>
 
-        <div className="grid grid-cols-2 gap-6">
-          <div className="bg-purple-50 p-6 rounded-2xl shadow">
-            <h2 className="text-xl font-semibold text-purple-700 mb-2">
-              Maîtres
-            </h2>
-            <p className="text-gray-600">Gestion des propriétaires</p>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          <div className="bg-purple-50 p-6 rounded-2xl shadow">
-            <h2 className="text-xl font-semibold text-purple-700 mb-2">
-              Chiens
-            </h2>
-            <p className="text-gray-600">Gestion des fiches chiens</p>
-          </div>
+        <a
+          href="/dashboard/owners"
+          className="bg-purple-50 hover:bg-purple-100 p-6 rounded-2xl shadow transition"
+        >
+          <h2 className="text-xl font-semibold text-purple-900 mb-2">
+            👩‍🦰 Maîtres
+          </h2>
+          <p className="text-gray-700">
+            Gestion des propriétaires
+          </p>
+        </a>
 
-          <div className="bg-purple-50 p-6 rounded-2xl shadow">
-            <h2 className="text-xl font-semibold text-purple-700 mb-2">
-              Séjours
-            </h2>
-            <p className="text-gray-600">Historique des gardes</p>
-          </div>
+        <a
+          href="/dashboard/dogs"
+          className="bg-purple-50 hover:bg-purple-100 p-6 rounded-2xl shadow transition"
+        >
+          <h2 className="text-xl font-semibold text-purple-900 mb-2">
+            🐾 Animaux
+          </h2>
+          <p className="text-gray-700">
+            Gestion des fiches chiens
+          </p>
+        </a>
 
-          <div className="bg-purple-50 p-6 rounded-2xl shadow">
-            <h2 className="text-xl font-semibold text-purple-700 mb-2">
-              Documents
-            </h2>
-            <p className="text-gray-600">Fichiers privés</p>
-          </div>
-        </div>
+        <a
+          href="/dashboard/bookings"
+          className="bg-purple-50 hover:bg-purple-100 p-6 rounded-2xl shadow transition"
+        >
+          <h2 className="text-xl font-semibold text-purple-900 mb-2">
+            🗓 Séjours
+          </h2>
+          <p className="text-gray-700">
+            Historique des gardes
+          </p>
+        </a>
+
+        <a
+          href="/dashboard/photos"
+          className="bg-purple-50 hover:bg-purple-100 p-6 rounded-2xl shadow transition"
+        >
+          <h2 className="text-xl font-semibold text-purple-900 mb-2">
+            📸 Photos
+          </h2>
+          <p className="text-gray-700">
+            Galerie des souvenirs
+          </p>
+        </a>
+
       </div>
-    </div>
+    </>
   );
 }
