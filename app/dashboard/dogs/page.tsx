@@ -85,6 +85,32 @@ export default function AnimalsPage() {
     }
   };
 
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+
+  const createContract = async (dogId: string, ownerId: string) => {
+    try {
+      const token = crypto.randomUUID();
+
+      await addDoc(collection(db, "contracts"), {
+        ownerId,
+        dogId,
+        dateDebut: new Date(),
+        dateFin: new Date(),
+        statut: "en_attente",
+        token,
+        version: "v1",
+        createdAt: new Date(),
+      });
+
+      const link = `${window.location.origin}/contrat/${token}`;
+      setGeneratedLink(link);
+
+    } catch (error) {
+      console.error(error);
+      alert("Erreur lors de la création du contrat");
+    }
+  };
+
   return (
     <>
       <h1 className="text-2xl font-bold text-purple-900 mb-8">
@@ -177,8 +203,53 @@ export default function AnimalsPage() {
             >
                 Voir la fiche admin →
             </a>
+
+            <button
+              onClick={() => createContract(animal.id, animal.ownerId)}
+              className="mt-3 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl transition"
+            >
+              Créer un contrat
+            </button>
           </div>
         ))}
+
+        {generatedLink && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full">
+              <h2 className="text-xl font-bold text-purple-900 mb-4">
+                Contrat créé 🎉
+              </h2>
+
+              <p className="text-sm text-gray-700 mb-3">
+                Envoie ce lien au client :
+              </p>
+
+              <input
+                value={generatedLink}
+                readOnly
+                className="w-full border border-purple-300 p-2 rounded-lg text-sm mb-4"
+              />
+
+              <div className="flex justify-between gap-3">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(generatedLink);
+                  }}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-xl w-full"
+                >
+                  Copier le lien
+                </button>
+
+                <button
+                  onClick={() => setGeneratedLink(null)}
+                  className="bg-gray-200 px-4 py-2 rounded-xl w-full"
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
