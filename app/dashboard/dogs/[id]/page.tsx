@@ -26,6 +26,7 @@ export default function AnimalAdminPage() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [docCategory, setDocCategory] = useState("Contrat");
   const [uploading, setUploading] = useState(false);
+  const [contracts, setContracts] = useState<any[]>([]);
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
   const uploadPreset = "calm_unsigned";
@@ -57,6 +58,20 @@ export default function AnimalAdminPage() {
     setAnimal({ ...animal, photoProfil: data.secure_url });
     };
 
+    const fetchContracts = async () => {
+      if (!id) return;
+
+      const q = query(collection(db, "contracts"), where("dogId", "==", id));
+      const snap = await getDocs(q);
+
+      const data = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }));
+
+      setContracts(data);
+    };
+
     const veterinaires = [
     "Clinique Vétérinaire Calais Centre",
     "Cabinet Dr Martin",
@@ -67,6 +82,7 @@ export default function AnimalAdminPage() {
     fetchAnimal();
     fetchBookings();
     fetchDocuments();
+    fetchContracts();
   }, [id]);
 
   const fetchAnimal = async () => {
@@ -443,6 +459,66 @@ export default function AnimalAdminPage() {
         {/* DOCUMENTS */}
         {activeTab === "documents" && (
         <>
+          {/* CONTRATS SIGNÉS */}
+            {contracts.length > 0 && (
+              <div className="mb-10">
+                <h3 className="font-semibold text-lg mb-6 text-purple-800">
+                  📄 Contrats signés
+                </h3>
+
+                {[...contracts]
+                  .sort((a, b) =>
+                    (b.signedAt?.seconds || 0) - (a.signedAt?.seconds || 0)
+                  )
+                  .map((contract) => (
+                    <div
+                      key={contract.id}
+                      className="bg-white border border-purple-200 p-5 rounded-2xl mb-4 shadow-sm flex justify-between items-center"
+                    >
+                      <div>
+                        <p className="font-semibold text-black text-lg">
+                          {contract.contractNumber || "Contrat de garde"}
+                        </p>
+
+                        <p className="text-sm text-gray-600 mt-1">
+                          {contract.signedAt?.seconds
+                            ? `Signé le ${new Date(
+                                contract.signedAt.seconds * 1000
+                              ).toLocaleDateString()}`
+                            : "Non signé"}
+                        </p>
+                      </div>
+
+                      <div className="flex gap-4 items-center">
+                        {contract.pdfUrl ? (
+                          <>
+                            <a
+                              href={contract.pdfUrl}
+                              target="_blank"
+                              className="text-purple-700 font-medium hover:underline"
+                            >
+                              👁️ Ouvrir
+                            </a>
+
+                            <a
+                              href={contract.pdfUrl}
+                              download
+                              className="text-green-700 font-medium hover:underline"
+                            >
+                              ⬇ Télécharger
+                            </a>
+                          </>
+                        ) : (
+                          <span className="text-red-600 text-sm font-medium">
+                            ⚠️ PDF non généré
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+
             {/* Upload + catégorie */}
             <div className="flex gap-3 mb-6 items-center">
             <select

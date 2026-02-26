@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { db } from "@/lib/firebase";
+import { jsPDF } from "jspdf";
+
 import {
   collection,
   query,
@@ -22,6 +24,7 @@ type ContractType = {
   dateFin: any;
   statut: string;
   signatureUrl?: string;
+  contractNumber?: string;
 };
 
 export default function ContratPage() {
@@ -127,33 +130,10 @@ export default function ContratPage() {
   const isFirstTime = !owner.contratGeneralValide;
 
   const requiredFields = [
-    "adresse",
     "nomPrenom",
-    "adresse",
     "telephone",
     "nomAnimal",
-    "actutraitements",
-    "pathologieconnue",
-    "espece",
-    "race",
-    "dateNaissance",
-    "email",
-    "lieuGarde",
-    "vaccins",
-    "sterilise",
-    "morsure",
-    "fugue",
-    "agressif",
-    "manipulable",
-    "pathologie",
-    "traitement",
-    "chienCategorie",
-    "peutVivreAutresAnimaux",
-    "veterinaire",
-    "contactUrgenceNom",
-    "contactUrgenceTel",
-    "autorisationPhoto",
-    "urgenceDecision",
+    
 
   ];
 
@@ -219,16 +199,286 @@ export default function ContratPage() {
       });
     }
 
+      const year = new Date().getFullYear();
+      const contractNumber = `CALM-${year}-${contract.id.slice(0, 6).toUpperCase()}`;
+
     await updateDoc(doc(db, "contracts", contract.id), {
       statut: "signé",
       signatureUrl: data.url,
       signedAt: new Date(),
+      contractNumber: contractNumber,
     });
 
-    setSigned(true);
+    // ==========================
+    // 🔹 GENERATION PDF
+    // ==========================
+
+    const pdf = new jsPDF();
+    const pageHeight = 280;
+
+    const checkPageBreak = (spaceNeeded = 10) => {
+      if (y + spaceNeeded > pageHeight) {
+        pdf.addPage();
+        y = 15;
+      }
+    };
+    
+    const sectionTitle = (title: string) => {
+      checkPageBreak(15);
+
+      pdf.setFillColor(245, 243, 255);
+      pdf.rect(15, y - 5, 180, 10, "F");
+
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(88, 28, 135);
+      pdf.text(title, 20, y + 2);
+
+      pdf.setTextColor(0);
+      y += 12;
+    };
+
+    const addParagraph = (text: string) => {
+  const lines = pdf.splitTextToSize(text, 170); // largeur max
+  lines.forEach((line: string) => {
+    checkPageBreak(8);
+    pdf.text(line, 15, y);
+    y += 6;
+  });
+};
+
+    // Bandeau doux
+    pdf.setFillColor(237, 231, 246);
+    pdf.rect(0, 0, 210, 35, "F");
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(20);
+    pdf.setTextColor(88, 28, 135);
+    pdf.text("Comme À La Maison by Angèle", 105, 18, { align: "center" });
+
+    pdf.setFontSize(13);
+    pdf.setTextColor(90);
+    pdf.text("Contrat initial de Pet-Sitting", 105, 26, { align: "center" });
+
+    pdf.setTextColor(0);
+    let y = 45;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(11);
+
+    pdf.text(`Contrat n° : ${contractNumber}`, 15, y);
+    y += 8;
+
+    pdf.text(`Date : ${new Date().toLocaleDateString()}`, 15, y);
+    y += 12;
+
+    // Propriétaire
+    pdf.setFont("helvetica", "bold");
+    checkPageBreak(10);
+    sectionTitle("Propriétaire");
+    y += 6;
+    pdf.setFont("helvetica", "normal");
+
+    addParagraph("Le présent contrat est conclu entre :");
+
+    pdf.text(`Nom : ${formData.nomPrenom}`, 20, y); y += 6;
+    pdf.text(`Téléphone : ${formData.telephone}`, 20, y); y += 6;
+    pdf.text(`Email : ${formData.email}`, 20, y); y += 6;
+    pdf.text(`Adresse : ${formData.adresse}`, 20, y); y += 10;
+
+    addParagraph("Et La Pet-Sitter :");
+    addParagraph("Angèle FRANCHIMONT");
+    addParagraph("75J Avenue Anthony Caro");
+    addParagraph("59630 Bourbourg");
+    addParagraph("Téléphone : 06 34 76 34 49");
+
+    // Animal
+    pdf.setFont("helvetica", "bold");
+    checkPageBreak(10);
+    sectionTitle("Animal");
+    y += 6;
+    pdf.setFont("helvetica", "normal");
+
+    addParagraph("Le propriétaire confie au Pet-Sitter l’animal suivant :");
+    pdf.text(`Nom : ${formData.nomAnimal}`, 20, y); y += 6;
+    pdf.text(`Espèce : ${formData.espece}`, 20, y); y += 6;
+    pdf.text(`Race : ${formData.race}`, 20, y); y += 6;
+    pdf.text(`Date de naissance : ${formData.dateNaissance}`, 20, y); y += 6;
+    pdf.text(`Identification : ${formData.identification || "-"}`, 20, y); y += 10;
+
+    // Lieu de Garde
+    pdf.setFont("helvetica", "bold");
+    checkPageBreak(10);
+    sectionTitle("Lieu de garde");
+    y += 6;
+    pdf.setFont("helvetica", "normal");
+
+    addParagraph("La garde pourra être effectuée soit au domicile du propriétaire, soit au domicile du Pet-Sitter.");
+    addParagraph("La garde s’effectue à un seul animal à la fois, sauf s’il s’agit de plusieurs animaux appartenant au même propriétaire.");
+    addParagraph("Pour des raisons de sécurité, les sorties se feront systématiquement en laisse.");
+    pdf.text(`Nom : ${formData.lieuGarde}`, 20, y); y += 6;
+
+    // Santé
+    pdf.setFont("helvetica", "bold");
+    checkPageBreak(10);
+    sectionTitle("Santé et comportement");
+    y += 6;
+    pdf.setFont("helvetica", "normal");
+
+    addParagraph("Le propriétaire déclare que l’animal confié est en bonne santé et communique l’ensemble des informations nécessaires à sa prise en charge. Toute omission d'information engage la responsabilité du propriétaire.");
+    [
+      ["L’animal est-il à jour de ses vaccins ?", formData.vaccins],
+      ["L’animal est-il stérilisé ? ", formData.sterilise],
+      ["A-t-il déjà mordu ?", formData.morsure],
+      ["A-t-il déjà fugué ?", formData.fugue],
+      ["Présente-t-il un comportement agressif ?", formData.agressif],
+      ["Peut-il être manipulé sans difficulté ?", formData.manipulable],
+      ["Peut-il vivre avec d'autres animaux ?", formData.peutVivreAutresAnimaux],
+      ["Souffre-t-il d'une pathologie connue ?", formData.pathologieconnue],
+      ["Précisez les pathologies :", formData.detailPathologie],
+      ["Suit-il actuellement un traitement ?", formData.actutraitements],
+      ["Précisez les traitements en cours :", formData.detailTraitement],
+    ].forEach(([label, value]) => {
+      if (value) {
+        pdf.text(`${label} : ${value}`, 20, y);
+        y += 6;
+      }
+    });
+
+    y += 6;
+
+    // Habitudes
+    pdf.setFont("helvetica", "bold");
+    checkPageBreak(10);
+    sectionTitle("Habitudes");
+    y += 6;
+    pdf.setFont("helvetica", "normal");
+
+    pdf.text(`Habitudes alimentaires (horaires, quantités, particularités) : ${formData.habitudesAlimentaires}`, 20, y, { maxWidth: 170 });
+    y += 10;
+
+    pdf.text(`Habitudes de vie (sommeil, promenades, peurs, rituels, etc...) : ${formData.habitudesVie}`, 20, y, { maxWidth: 170 });
+    y += 15;
+
+    // Urgence
+    pdf.setFont("helvetica", "bold");
+    checkPageBreak(10);
+    sectionTitle("Urgence");
+    y += 6;
+    pdf.setFont("helvetica", "normal");
+
+    addParagraph("En cas d’urgence vétérinaire, le Pet-Sitter est habilité à consulter un vétérinaire afin de préserver la santé et la sécurité de l’animal.");
+    addParagraph("Le propriétaire s’engage à rembourser l’intégralité des frais vétérinaires engagés.");
+
+    addParagraph("En cas d'urgence :");
+    pdf.text(`Décision : ${formData.urgenceDecision}`, 20, y); y += 6;
+    pdf.text(`Vétérinaire Référent: ${formData.veterinaire}`, 20, y); y += 6;
+    
+    addParagraph("Le contact d’urgence sera sollicité uniquement en cas d’indisponibilité téléphonique du propriétaire pour une situation urgente nécessitant une décision rapide.");
+    addParagraph("Il est recommandé d’indiquer une personne disponible et distincte du propriétaire.");
+    pdf.text(`Contact d'urgence : ${formData.contactUrgenceNom}`, 20, y); y += 6;
+    pdf.text(`Téléphone du contact d'urgence : ${formData.contactUrgenceTel}`, 20, y); y += 12;
+
+    // Paiements
+    pdf.setFont("helvetica", "bold");
+    checkPageBreak(10);
+    sectionTitle("Conditions financières");
+    y += 6;
+    pdf.setFont("helvetica", "normal");
+
+    addParagraph("Le paiement sera effectué en espèces à la fin de la prestation. Aucun acompte n’est demandé.");
+
+    // Droit image
+    pdf.setFont("helvetica", "bold");
+    checkPageBreak(10);
+    sectionTitle("Droit à l'image");
+    y += 6;
+    pdf.setFont("helvetica", "normal");
+
+    addParagraph("Des photos et/ou vidéos de l’animal pourront être prises durant la garde uniquement dans le but de donner des nouvelles au propriétaire.");
+    addParagraph("Aucune publication publique ne sera réalisée. Les images seront transmises exclusivement au propriétaire de l’animal.");
+
+    pdf.text(`Autorisation : ${formData.autorisationPhoto}`, 20, y);
+    y += 15;
+
+    // Signature
+    checkPageBreak(60);
+
+    pdf.setFillColor(250, 245, 255);
+    pdf.rect(15, y - 5, 180, 60, "F");
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(88, 28, 135);
+    pdf.text("Signature électronique", 105, y + 5, { align: "center" });
+
+    addParagraph("Je certifie que toutes les informations fournies sont exactes.");
+    addParagraph("Je reconnais avoir pris connaissance des conditions de garde.");
+
+    pdf.setTextColor(0);
+
+    const signatureBase64 = sigRef.current.toDataURL("image/png");
+    pdf.addImage(signatureBase64, "PNG", 75, y + 12, 60, 30);
+
+    pdf.setFontSize(10);
+    pdf.text(
+      `Signé le ${new Date().toLocaleDateString()} à ${formData.villeSignature}`,
+      105,
+      y + 50,
+      { align: "center" }
+    );
+
+  const pageCount = pdf.getNumberOfPages();
+
+  for (let i = 1; i <= pageCount; i++) {
+    pdf.setPage(i);
+    pdf.setFontSize(9);
+    pdf.setTextColor(150);
+    pdf.text(
+      "Comme À La Maison by Angèle - Bourbourg",
+      105,
+      290,
+      { align: "center" }
+    );
+}
+
+    // Convertir en blob
+    const pdfBlob = pdf.output("blob");
+
+    // Préparer upload
+    const uploadData = new FormData();
+    uploadData.append("file", pdfBlob, `contrat-${contractNumber}.pdf`);
+    uploadData.append("upload_preset", "calm_unsigned");
+
+    const uploadRes = await fetch(
+      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/raw/upload`,
+      {
+        method: "POST",
+        body: uploadData,
+      }
+    );
+
+    const uploadJson = await uploadRes.json();
+
+    if (!uploadJson.secure_url) {
+      alert("Erreur upload PDF");
+      return;
+    }
+
+    const pdfUrl = uploadJson.secure_url;
+
+    // Sauvegarde dans le contrat
+    await updateDoc(doc(db, "contracts", contract.id), {
+      pdfUrl: pdfUrl,
+    });
+
+    // Sauvegarde dans la fiche chien
+    await updateDoc(doc(db, "dogs", dog.id), {
+      dernierContratPdf: pdfUrl,
+    });
+  setSigned(true);
   };
 
 return (
+<div id="contract-content">
   <div className="min-h-screen bg-purple-50 py-12 px-6 flex justify-center">
     <div className="bg-white shadow-2xl rounded-3xl p-12 max-w-4xl w-full space-y-12">
 
@@ -837,5 +1087,6 @@ return (
 
     </div>
   </div>
+</div>
 );
 }

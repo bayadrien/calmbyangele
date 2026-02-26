@@ -6,8 +6,12 @@ import {
   collection,
   addDoc,
   getDocs,
+  getDoc,
+  doc,
+  updateDoc
 } from "firebase/firestore";
 import Navbar from "@/components/Navbar";
+import { v4 as uuidv4 } from "uuid";
 
 export default function BookingsPage() {
   const [dogs, setDogs] = useState<any[]>([]);
@@ -54,15 +58,52 @@ export default function BookingsPage() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    const nights = calculateNights(
-      form.dateDebut,
-      form.dateFin
-    );
+    if (!form.dogId || !form.dateDebut || !form.dateFin) {
+      alert("Veuillez remplir les champs obligatoires.");
+      return;
+    }
 
-    await addDoc(collection(db, "bookings"), {
+    const nights = calculateNights(form.dateDebut, form.dateFin);
+
+    // 🔹 1. Création du booking
+    const bookingRef = await addDoc(collection(db, "bookings"), {
       ...form,
       nombreNuits: nights,
       createdAt: new Date(),
+    });
+
+    // 🔹 2. Récupérer le chien pour trouver ownerId
+    const dogSnap = await getDoc(doc(db, "dogs", form.dogId));
+    const dogData = dogSnap.data();
+
+    if (!dogData?.ownerId) {
+      alert("Owner introuvable pour ce chien.");
+      return;
+    }
+
+    const ownerId = dogData.ownerId;
+
+    // 🔹 3. Générer token unique
+    const token = uuidv4();
+
+    // 🔹 4. Créer stayContract
+    await addDoc(collection(db, "stayContracts"), {
+      bookingId: bookingRef.id,
+      ownerId: ownerId,
+      dogId: form.dogId,
+      dateDebut: form.dateDebut,
+      dateFin: form.dateFin,
+      token: token,
+      statut: "en_attente",
+      createdAt: new Date(),
+    });
+
+    // 🔹 5. Générer lien
+    const link = `${window.location.origin}/contrat-sejour/${token}`;
+
+    // 🔹 6. Sauvegarder lien dans booking
+    await updateDoc(bookingRef, {
+      stayContractLink: link,
     });
 
     setForm({
@@ -167,6 +208,15 @@ export default function BookingsPage() {
                 <p className="text-gray-700">
                   Notes : {booking.notesPubliques}
                 </p>
+                {booking.stayContractLink && (
+                  <a
+                    href={booking.stayContractLink}
+                    target="_blank"
+                    className="text-purple-700 underline block mt-2"
+                  >
+                    Voir contrat complémentaire
+                  </a>
+                )}
               </div>
             );
           })}

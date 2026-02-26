@@ -47,6 +47,7 @@ export default function Navbar() {
           <NavLink href="/dashboard" label="🏠 Dashboard" close={() => setOpen(false)} />
           <NavLink href="/dashboard/owners" label="👤 Maîtres" close={() => setOpen(false)} />
           <NavLink href="/dashboard/dogs" label="🐾 Animaux" close={() => setOpen(false)} />
+          <NavLink href="/dashboard/bookings" label="🛏️ Gestion des Séjours" close={() => setOpen(false)} />
           <NavLink href="/dashboard/calendar" label="📅 Calendrier" close={() => setOpen(false)} />
           <NavLink href="/dashboard/photos" label="📸 Photos" close={() => setOpen(false)} />
 
