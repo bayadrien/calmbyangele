@@ -15,12 +15,18 @@ export default function LoginPage() {
   const adminEmail = ["aux.pattounes59@gmail.com","bayadrien@gmail.com"]
 
   const checkUser = async (user: any) => {
-    if (adminEmail.includes(user.email)) {
+    console.log("USER EMAIL:", user?.email);
+
+    if (user?.email && adminEmail.includes(user.email)) {
+      console.log("ADMIN OK");
       router.push("/dashboard");
     } else {
+      console.log("NOT ADMIN");
       alert("Accès refusé.");
       await signOut(auth);
     }
+    alert("EMAIL: " + user?.email);
+    alert("IS ADMIN: " + adminEmail.includes(user?.email));
   };
 
   const handleLogin = async () => {
@@ -46,17 +52,15 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
-    // Gestion du retour redirect mobile
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result?.user) {
-          checkUser(result.user);
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }, []);
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        alert("AUTH STATE: " + user.email);
+        await checkUser(user);
+      }
+    });
+
+  return () => unsubscribe();
+}, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-purple-200">
