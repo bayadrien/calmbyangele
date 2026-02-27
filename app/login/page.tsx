@@ -12,7 +12,7 @@ import { auth, provider } from "@/lib/firebase";
 
 export default function LoginPage() {
   const router = useRouter();
-  const adminEmail = "aux.pattounes59@gmail.com";
+  const adminEmail = ["aux.pattounes59@gmail.com","bayadrien@gmail.com"]
 
   const checkUser = async (user: any) => {
     if (user.email === adminEmail) {
