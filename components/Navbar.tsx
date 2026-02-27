@@ -17,7 +17,7 @@ export default function Navbar() {
       {/* BARRE HAUTE */}
       <div className="fixed top-0 left-0 w-full bg-white shadow z-50 flex justify-between items-center px-6 py-4">
         <h1 className="text-xl font-bold text-purple-700">
-          CALM by Angèle
+          Comme A La Maison by Angèle
         </h1>
 
         <button
@@ -37,28 +37,40 @@ export default function Navbar() {
       )}
 
       {/* MENU LATERAL */}
-      <div
-        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-xl z-50 transform transition-transform duration-300 ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="p-6 space-y-6">
+        <div
+          className={`fixed top-0 right-0 h-screen w-64 bg-white shadow-xl z-50 transform transition-transform duration-300 ${
+            open ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <div className="flex flex-col h-full p-6">
 
-          <NavLink href="/dashboard" label="🏠 Dashboard" close={() => setOpen(false)} />
-          <NavLink href="/dashboard/owners" label="👤 Maîtres" close={() => setOpen(false)} />
-          <NavLink href="/dashboard/dogs" label="🐾 Animaux" close={() => setOpen(false)} />
-          <NavLink href="/dashboard/bookings" label="🛏️ Gestion des Séjours" close={() => setOpen(false)} />
-          <NavLink href="/dashboard/calendar" label="📅 Calendrier" close={() => setOpen(false)} />
-          <NavLink href="/dashboard/photos" label="📸 Photos" close={() => setOpen(false)} />
+            {/* Liens */}
+            <div className="space-y-6">
+              <NavLink href="/dashboard" label="🏠 Dashboard" close={() => setOpen(false)} />
+              <NavLink href="/dashboard/owners" label="👤 Maîtres" close={() => setOpen(false)} />
+              <NavLink href="/dashboard/dogs" label="🐾 Animaux" close={() => setOpen(false)} />
+              <NavLink href="/dashboard/bookings" label="🛏️ Gestion des Séjours" close={() => setOpen(false)} />
+              <NavLink href="/dashboard/calendar" label="📅 Calendrier" close={() => setOpen(false)} />
+              <NavLink href="/dashboard/photos" label="📸 Photos" close={() => setOpen(false)} />
 
-          <button
-            onClick={handleLogout}
-            className="text-red-500 mt-8"
-          >
-            🚪 Déconnexion
-          </button>
+              <button
+                onClick={handleLogout}
+                className="text-red-500 mt-8"
+              >
+                🚪 Déconnexion
+              </button>
+            </div>
+
+            {/* Signature tout en bas */}
+            <div className="mt-auto pt-6 border-t border-gray-100 text-center">
+              <p className="text-xs text-gray-400 tracking-wide">
+                Built with 💜 by 
+                <span className="font-semibold text-gray-500"> Bayadrien</span>
+              </p>
+            </div>
+
+          </div>
         </div>
-      </div>
     </>
   );
 }

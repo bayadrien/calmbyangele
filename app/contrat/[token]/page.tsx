@@ -209,6 +209,16 @@ export default function ContratPage() {
       contractNumber: contractNumber,
     });
 
+    await fetch("/api/notify-contract-signed", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "initial",
+        dogName: dog.nom,
+        ownerName: owner.prenom + " " + owner.nom,
+      }),
+    });
+
     // ==========================
     // 🔹 GENERATION PDF
     // ==========================
@@ -593,9 +603,9 @@ return (
             }
           >
             <option value="">Espèce *</option>
-            <option value="chien">Chien</option>
-            <option value="chat">Chat</option>
-            <option value="autre">Autres</option>
+            <option value="Chien">Chien</option>
+            <option value="Chat">Chat</option>
+            <option value="Autre">Autres</option>
           </select>
 
           <input
@@ -660,10 +670,10 @@ return (
           }
         >
           <option value="">Choisir le lieu de garde *</option>
-          <option value="domicileProprietaire">
+          <option value="Au domicile du propriétaire">
             Au domicile du propriétaire
           </option>
-          <option value="domicilePetSitter">
+          <option value="Au domicile du Pet-Sitter">
             Au domicile du Pet-Sitter
           </option>
         </select>
@@ -859,17 +869,17 @@ return (
       <div className="space-y-2">
         {[
           {
-            value: "decisionLibre",
+            value: "J’autorise le Pet-Sitter à prendre toute décision médicale nécessaire",
             label:
               "J’autorise le Pet-Sitter à prendre toute décision médicale nécessaire",
           },
           {
-            value: "meContacter",
+            value: "Je souhaite être contacté avant toute décision",
             label:
               "Je souhaite être contacté avant toute décision",
           },
           {
-            value: "delegationContact",
+            value: "Je délègue la décision à mon contact d’urgence",
             label:
               "Je délègue la décision à mon contact d’urgence",
           },
@@ -901,8 +911,19 @@ return (
         }
       >
         <option value="">Choisir le vétérinaire référent *</option>
-        <option value="veto1">Clinique vétérinaire 1</option>
-        <option value="veto2">Clinique vétérinaire 2</option>
+        <option value="CV Florentine (Bourbourg) - Dr MANIEZ Laurence">CV Florentine (Bourbourg) - Dr MANIEZ Laurence</option>
+        <option value="CV Florentine (Bourbourg) - Dr SCHLESSER Eleonore">CV Florentine (Bourbourg) - Dr   SCHLESSER Eleonore</option>
+        <option value="CV des Lys (Loon-Plage) - Dr CLARYS Angélique">CV des Lys (Loon-Plage) - Dr CLARYS Angélique</option>
+        <option value="CV des Lys (Loon-Plage) - Dr DEGRAVE Pélagie">CV des Lys (Loon-Plage) - Dr DEGRAVE Pélagie</option>
+        <option value="CV de l’Aa (Gravelines) - Dr DANDRIFOSSE Jean-François">CV de l’Aa (Gravelines) - Dr DANDRIFOSSE Jean-François</option>
+        <option value="CV de l’Aa (Gravelines) - Dr MONTAGNE Nathalie">CV de l’Aa (Gravelines) - Dr MONTAGNE Nathalie</option>
+        <option value="CV Univet (Grande-Synthe) - Dr HAVEGEER Christian">CV Univet (Grande-Synthe) - Dr HAVEGEER Christian</option>
+        <option value="CV Univet (Grande-Synthe) - Dr SCALA Arnaud">CV Univet (Grande-Synthe) - Dr SCALA Arnaud</option>
+        <option value="CV d’Audruicq (Audruicq) - Dr KERCKHOVE Laurence">CV d’Audruicq (Audruicq) - Dr KERCKHOVE Laurence</option>
+        <option value="CV d’Audruicq (Audruicq) - Dr LOISEAU Estelle">CV d’Audruicq (Audruicq) - Dr LOISEAU Estelle</option>
+        <option value="CV des Capucines (Oye-Plage) - Dr MANIEZ Laurence">CV des Capucines (Oye-Plage) - Dr MANIEZ Laurence</option>
+        <option value="CV des Capucines (Oye-Plage) - Dr SCHLESSER Eleonore">CV des Capucines (Oye-Plage) - Dr SCHLESSER Eleonore</option>
+        <option value="Autre">Autre (à préciser directement au Pet-Sitter)</option>
       </select>
     )}
 
@@ -985,7 +1006,7 @@ return (
         <input
           type="radio"
           name="autorisationPhoto"
-          value="oui"
+          value="J’autorise l’envoi de photos/vidéos uniquement à mon usage privé"
           onChange={(e) =>
             setFormData({
               ...formData,
@@ -1000,7 +1021,7 @@ return (
         <input
           type="radio"
           name="autorisationPhoto"
-          value="non"
+          value="Je refuse toute prise d’image"
           onChange={(e) =>
             setFormData({
               ...formData,

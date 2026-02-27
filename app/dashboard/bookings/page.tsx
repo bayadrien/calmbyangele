@@ -23,6 +23,7 @@ export default function BookingsPage() {
     dateFin: "",
     prix: "",
     notesPubliques: "",
+    modalite: "",
   });
 
   const fetchDogs = async () => {
@@ -65,14 +66,15 @@ export default function BookingsPage() {
 
     const nights = calculateNights(form.dateDebut, form.dateFin);
 
-    // 🔹 1. Création du booking
+    // 🔹 1. Création du booking (UNE SEULE FOIS)
     const bookingRef = await addDoc(collection(db, "bookings"), {
       ...form,
       nombreNuits: nights,
+      stayContractStatut: "en_attente",
       createdAt: new Date(),
     });
 
-    // 🔹 2. Récupérer le chien pour trouver ownerId
+    // 🔹 2. Récupérer le chien
     const dogSnap = await getDoc(doc(db, "dogs", form.dogId));
     const dogData = dogSnap.data();
 
@@ -81,28 +83,28 @@ export default function BookingsPage() {
       return;
     }
 
-    const ownerId = dogData.ownerId;
-
-    // 🔹 3. Générer token unique
+    // 🔹 3. Token
     const token = uuidv4();
 
     // 🔹 4. Créer stayContract
-    await addDoc(collection(db, "stayContracts"), {
-      bookingId: bookingRef.id,
-      ownerId: ownerId,
+    const stayContractRef = await addDoc(collection(db, "stayContracts"), {
       dogId: form.dogId,
+      ownerId: dogData.ownerId,
+      bookingId: bookingRef.id,
       dateDebut: form.dateDebut,
       dateFin: form.dateFin,
-      token: token,
       statut: "en_attente",
-      createdAt: new Date(),
+      token,
+      modalite: form.modalite,
+      prix: form.prix,
     });
 
     // 🔹 5. Générer lien
     const link = `${window.location.origin}/contrat-sejour/${token}`;
 
-    // 🔹 6. Sauvegarder lien dans booking
+    // 🔹 6. Mettre à jour le booking existant
     await updateDoc(bookingRef, {
+      stayContractId: stayContractRef.id,
       stayContractLink: link,
     });
 
@@ -112,6 +114,7 @@ export default function BookingsPage() {
       dateFin: "",
       prix: "",
       notesPubliques: "",
+      modalite: "",
     });
 
     fetchBookings();
@@ -161,6 +164,18 @@ export default function BookingsPage() {
             className="border border-purple-300 bg-white p-2 rounded-lg text-gray-900"
           />
 
+          <select
+            value={form.modalite}
+            onChange={(e) =>
+              setForm({ ...form, modalite: e.target.value })
+            }
+            className="border border-purple-300 bg-white p-2 rounded-lg text-gray-900"
+          >
+            <option value="">Modalité de garde</option>
+            <option value="Au Domicile du Pet-Sitter">Au Domicile du Pet-Sitter</option>
+            <option value="Au Domicile du Propriétaire">Au Domicile du Propriétaire</option>
+          </select>
+
           <input
             placeholder="Prix"
             value={form.prix}
@@ -209,13 +224,32 @@ export default function BookingsPage() {
                   Notes : {booking.notesPubliques}
                 </p>
                 {booking.stayContractLink && (
-                  <a
-                    href={booking.stayContractLink}
-                    target="_blank"
-                    className="text-purple-700 underline block mt-2"
-                  >
-                    Voir contrat complémentaire
-                  </a>
+                  <div className="flex justify-between items-center mt-3">
+
+                    {/* Lien uniquement si pas signé */}
+                    {booking.stayContractStatut === "en_attente" && (
+                      <a
+                        href={booking.stayContractLink}
+                        target="_blank"
+                        className="text-purple-700 underline"
+                      >
+                        Voir contrat complémentaire
+                      </a>
+                    )}
+
+                    {/* Badge */}
+                    {booking.stayContractStatut === "en_attente" && (
+                      <span className="bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full font-medium">
+                        ⏳ En attente
+                      </span>
+                    )}
+
+                    {booking.stayContractStatut === "signé" && (
+                      <span className="ml-auto bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-medium">
+                        ✅ Contrat signé
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
             );

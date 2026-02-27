@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 
 export default function AnimalsPage() {
   const [owners, setOwners] = useState<any[]>([]);
@@ -27,11 +27,37 @@ export default function AnimalsPage() {
 
   const fetchAnimals = async () => {
     const snapshot = await getDocs(collection(db, "dogs"));
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setAnimals(data);
+
+    const animalsData = await Promise.all(
+      snapshot.docs.map(async (docSnap) => {
+        const animalData = { id: docSnap.id, ...docSnap.data() };
+
+        // 🔹 Chercher contrat initial de CET animal
+        const q = query(
+          collection(db, "contracts"),
+          where("dogId", "==", docSnap.id)
+        );
+
+        const contractSnap = await getDocs(q);
+
+        let contractStatut = null;
+        let contractToken = null;
+
+        if (!contractSnap.empty) {
+          const contractData = contractSnap.docs[0].data();
+          contractStatut = contractData.statut;
+          contractToken = contractData.token;
+        }
+
+        return {
+          ...animalData,
+          contractStatut,
+          contractToken,
+        };
+      })
+    );
+
+    setAnimals(animalsData);
   };
 
   useEffect(() => {
@@ -204,12 +230,38 @@ export default function AnimalsPage() {
                 Voir la fiche admin →
             </a>
 
-            <button
-              onClick={() => createContract(animal.id, animal.ownerId)}
-              className="mt-3 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl transition"
-            >
-              Créer un contrat
-            </button>
+            <div className="flex items-center gap-3 mt-3">
+              {animal.contractStatut === "en_attente" && (
+                <>
+                  <span className="bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full font-medium">
+                    ⏳ En attente
+                  </span>
+
+                  <a
+                    href={`/contrat/${animal.contractToken}`}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-xl"
+                  >
+                    Voir le contrat
+                  </a>
+                </>
+              )}
+
+              {animal.contractStatut === "signé" && (
+                <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-medium">
+                  ✅ Contrat initial validé
+                </span>
+              )}
+
+              {!animal.contractStatut && (
+                <button
+                  onClick={() => createContract(animal.id, animal.ownerId)}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-xl"
+                >
+                  Créer un contrat
+                </button>
+              )}
+
+            </div>
           </div>
         ))}
 

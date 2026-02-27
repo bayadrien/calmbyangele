@@ -61,7 +61,11 @@ export default function AnimalAdminPage() {
     const fetchContracts = async () => {
       if (!id) return;
 
-      const q = query(collection(db, "contracts"), where("dogId", "==", id));
+      const q = query(
+        collection(db, "contracts"),
+        where("dogId", "==", id)
+      );
+
       const snap = await getDocs(q);
 
       const data = snap.docs.map((d) => ({
@@ -73,10 +77,19 @@ export default function AnimalAdminPage() {
     };
 
     const veterinaires = [
-    "Clinique Vétérinaire Calais Centre",
-    "Cabinet Dr Martin",
-    "Clinique des Flandres",
-    "Clinique Vétérinaire Saint-Pierre",
+    "CV Florentine (Bourbourg) - Dr MANIEZ Laurence",
+        "CV Florentine (Bourbourg) - Dr SCHLESSER Eleonore",
+        "CV des Lys (Loon-Plage) - Dr CLARYS Angélique",
+        "CV des Lys (Loon-Plage) - Dr DEGRAVE Pélagie",
+        "CV de l’Aa (Gravelines) - Dr DANDRIFOSSE Jean-François",
+        "CV de l’Aa (Gravelines) - Dr MONTAGNE Nathalie",
+        "CV Univet (Grande-Synthe) - Dr HAVEGEER Christian",
+        "CV Univet (Grande-Synthe) - Dr SCALA Arnaud",
+        "CV d’Audruicq (Audruicq) - Dr KERCKHOVE Laurence",
+        "CV d’Audruicq (Audruicq) - Dr LOISEAU Estelle",
+        "CV des Capucines (Oye-Plage) - Dr MANIEZ Laurence",
+        "CV des Capucines (Oye-Plage) - Dr SCHLESSER Eleonore",
+        "Autre"
     ];
   useEffect(() => {
     fetchAnimal();

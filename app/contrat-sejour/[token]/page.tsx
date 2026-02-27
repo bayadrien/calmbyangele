@@ -11,9 +11,35 @@ import {
   getDoc,
   updateDoc,
   doc,
+  addDoc,
+  arrayUnion,
 } from "firebase/firestore";
 import SignatureCanvas from "react-signature-canvas";
 import { jsPDF } from "jspdf";
+
+  type StayContractType = {
+          id: string;
+          ownerId: string;
+          dogId: string;
+          dateDebut: string;
+          dateFin: string;
+          statut: string;
+          token: string;
+          pdfUrl?: string;
+          signatureUrl?: string;
+          modalite: string;
+          prix: string;
+          notes: string;
+          ville: string;
+          changements: string;
+          detailChangements: string;
+          bookingId: string;
+      };
+
+    type StayFormData = {
+        changements: string;
+        detailChangements: string;
+    }
 
 export default function ContratSejourPage() {
   const params = useParams();
@@ -24,23 +50,12 @@ export default function ContratSejourPage() {
   const [dog, setDog] = useState<any>(null);
   const [signed, setSigned] = useState(false);
 
-  const sigRef = useRef<any>(null);
+  const [formData, setFormData] = useState<StayFormData>({
+    changements: "",        // "oui" | "non"
+    detailChangements: "",  // texte si oui
+  });
 
-    type StayContractType = {
-        id: string;
-        ownerId: string;
-        dogId: string;
-        dateDebut: string;
-        dateFin: string;
-        statut: string;
-        token: string;
-        pdfUrl?: string;
-        signatureUrl?: string;
-        modalite: string;
-        prix: string;
-        notes: string;
-        ville: string;
-    };
+  const sigRef = useRef<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,8 +107,13 @@ export default function ContratSejourPage() {
     // ======================
 
     const pdf = new jsPDF();
-    let y = 20;
+    let y = 32;
     const pageHeight = 280;
+    const leftMargin = 20;
+    const contentWidth = 170;
+    const lineHeight = 6;
+    const sectionSpacing = 8;
+    const paragraphSpacing = 4;
 
     const checkPageBreak = (space = 10) => {
     if (y + space > pageHeight) {
@@ -109,6 +129,21 @@ export default function ContratSejourPage() {
     y += 7;
     };
 
+    const addSectionTitle = (title: string) => {
+      y += 6;
+
+      pdf.setFillColor(237, 233, 254); // violet très léger
+      pdf.rect(leftMargin - 5, y - 5, 180, 7, "F");
+
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+
+      pdf.text(title, leftMargin, y);
+
+      y += 6;
+    };
+
     const addParagraph = (text: string) => {
     const lines = pdf.splitTextToSize(text, 170);
     lines.forEach((line: string) => {
@@ -120,52 +155,48 @@ export default function ContratSejourPage() {
     };
 
     // 🔹 HEADER
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(16);
-    pdf.text(
-    "Comme à la maison by Angèle – Avenant de séjour",
-    105,
-    y,
-    { align: "center" }
-    );
+    pdf.setFillColor(237, 231, 246); // violet doux
+    pdf.rect(0, 0, 210, 35, "F");
 
-    y += 15;
+    pdf.setTextColor(88, 28, 135);
+    pdf.setFontSize(18);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Comme À La Maison by Angèle", 105, 15, { align: "center" });
+
+    pdf.setFontSize(12);
+    pdf.text("Avenant de séjour", 105, 23, { align: "center" });
+
+    pdf.setTextColor(0, 0, 0);
+    y = 40;
 
     // ==========================
     // 1️⃣ INFORMATIONS
     // ==========================
 
-    addLine("1️⃣ Informations", true);
+   addSectionTitle("1. Informations");
 
-    addLine(
-    `Coordonnées du propriétaire : ${owner.prenom} ${owner.nom}`
-    );
+    addLine(`Coordonnées du propriétaire : ${owner.prenom} ${owner.nom}`);
 
-    addLine(
-    `Animal : ${dog.nom} - ${dog.type || "-"} - ${dog.race || "-"} - ${dog.dateNaissance || "-"}`
-    );
+    addLine(`Nom : ${dog.nom}`);
+    addLine(`Type : ${dog.type || "-"}`);
+    addLine(`Race : ${dog.race || "-"}`);
+    addLine(`Date de naissance : ${dog.dateNaissance || "-"}`);
 
     y += 5;
 
     // ==========================
     // 2️⃣ CLAUSE DE RATTACHEMENT
     // ==========================
+    addSectionTitle("2. Clause de Rattachement");
+    addLine("Le présent document constitue un avenant au contrat signé initialement.");
 
-    addLine("2️⃣ Clause de rattachement", true);
-
-    addParagraph(
-    "Le présent document constitue un avenant au contrat signé initialement."
-    );
-
-    addParagraph(
-    "L’ensemble des clauses, conditions générales et responsabilités définies dans le contrat initial demeurent applicables."
-    );
+    addLine("L’ensemble des clauses, conditions générales et responsabilités définies");
+    addLine("dans le contrat initial demeurent applicables.");
 
     // ==========================
     // 3️⃣ DÉTAILS DU SEJOUR
     // ==========================
-
-    addLine("3️⃣ Détails du séjour concerné", true);
+    addSectionTitle("3. Détails de Séjour");
 
     addLine(
     `Dates : du ${new Date(contract.dateDebut).toLocaleDateString()} au ${new Date(contract.dateFin).toLocaleDateString()}`
@@ -173,17 +204,20 @@ export default function ContratSejourPage() {
 
     addLine(`Modalité de garde : ${contract.modalite || "-"}`);
     addLine(`Tarif total : ${contract.prix || "-"} €`);
-    addLine(
-    `Changements depuis la dernière garde : ${contract.notes || "Aucun"}`
-    );
+    if (formData.changements === "oui") {
+      addLine(
+        `Changements depuis la dernière garde : ${formData.detailChangements}`
+      );
+    } else {
+      addLine("Changements depuis la dernière garde : Aucun");
+    }
 
     y += 5;
 
     // ==========================
     // 4️⃣ DÉCLARATION
     // ==========================
-
-    addLine("4️⃣ Déclaration du propriétaire", true);
+    addSectionTitle("4. Déclaration");
 
     addParagraph(
     "Je confirme que les informations médicales et comportementales transmises lors du contrat initial sont toujours exactes."
@@ -196,45 +230,65 @@ export default function ContratSejourPage() {
     // ==========================
     // 5️⃣ SIGNATURE
     // ==========================
+    addSectionTitle("5. Signature");
 
-    addLine("5️⃣ Signature", true);
+    checkPageBreak(30);
 
-    checkPageBreak(50);
+    pdf.setDrawColor(124, 58, 237);
+    pdf.setLineWidth(0.5);
+    pdf.rect(leftMargin - 5, y - 4, 180, 28);
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(10);
+    pdf.setTextColor(0, 0, 0);
+
+    pdf.text("Signature du propriétaire", leftMargin, y + 3);
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(10);
 
     pdf.text(
-    `Fait le ${new Date().toLocaleDateString()} à ${contract.ville || "-"}`,
-    20,
-    y
+      `Fait le ${new Date().toLocaleDateString()} à ${contract.ville || "-"}`,
+      leftMargin,
+      y + 8
     );
 
-    y += 15;
+   if (!sigRef.current || sigRef.current.isEmpty()) {
+      alert("Veuillez signer avant de valider.");
+      return;
+    }
 
     const signatureBase64 = sigRef.current.toDataURL("image/png");
 
-    pdf.addImage(signatureBase64, "PNG", 20, y, 60, 30);
+    pdf.addImage(signatureBase64, "PNG", 20, y + 10, 40, 15);
 
-    y += 40;
+    const pageCount = pdf.getNumberOfPages();
 
-    pdf.setFontSize(10);
-    pdf.text("Signature du propriétaire", 20, y);
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i);
+      pdf.setFontSize(9);
+      pdf.setTextColor(150);
+      pdf.text(
+        "Comme À La Maison by Angèle - Bourbourg",
+        105,
+        290,
+        { align: "center" }
+      );
+}
 
     // Convertir en blob
     const pdfBlob = pdf.output("blob");
 
     // Upload Cloudinary
-    const formData = new FormData();
-    formData.append(
-      "file",
-      pdfBlob,
-      `sejour-${dog.nom}-${Date.now()}.pdf`
-    );
-    formData.append("upload_preset", "calm_unsigned");
+    const uploadForm = new FormData();
+    uploadForm.append("file", pdfBlob, `sejour-${dog.nom}-${Date.now()}.pdf`);
+    uploadForm.append("upload_preset", "calm_unsigned");
 
     const uploadRes = await fetch(
       `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/raw/upload`,
       {
         method: "POST",
-        body: formData,
+        body: uploadForm,
       }
     );
 
@@ -251,7 +305,44 @@ export default function ContratSejourPage() {
       signatureUrl: signatureBase64,
       pdfUrl: uploadJson.secure_url,
       signedAt: new Date(),
-    });
+      changements: formData.changements,
+      detailChangements:
+        formData.changements === "oui"
+          ? formData.detailChangements
+          : "",
+        });
+
+        await updateDoc(doc(db, "bookings", contract.bookingId), {
+          stayContractStatut: "signé",
+        });
+
+        await updateDoc(doc(db, "dogs", contract.dogId), {
+          sejourPdfs: arrayUnion({
+            url: uploadJson.secure_url,
+            date: new Date(),
+            stayContractId: contract.id,
+          }),
+        });
+        
+        await fetch("/api/notify-contract-signed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            dogName: dog.nom,
+            ownerName: owner.prenom + " " + owner.nom,
+            dateDebut: contract.dateDebut,
+            dateFin: contract.dateFin,
+            prix: contract.prix
+          }),
+        });
+
+        await addDoc(collection(db, "documents"), {
+          animalId: contract.dogId,
+          fileUrl: uploadJson.secure_url,
+          fileName: `Avenant séjour ${new Date(contract.dateDebut).toLocaleDateString()}`,
+          category: "Contrat",
+          createdAt: new Date(),
+        });
 
     setSigned(true);
   };
@@ -327,8 +418,7 @@ export default function ContratSejourPage() {
             </p>
 
             <p>
-                <strong>Modalité de garde :</strong>{" "}
-                {contract.modalite || "-"}
+              <strong>Modalité de garde :</strong> {contract.modalite}
             </p>
 
             <p>
@@ -336,10 +426,50 @@ export default function ContratSejourPage() {
                 {contract.prix || "-"} €
             </p>
 
-            <p>
-                <strong>Changements depuis la dernière garde :</strong>{" "}
-                {contract.notes || "Aucun"}
-            </p>
+            <div className="space-y-3">
+              <p className="font-semibold">
+                Changements depuis la dernière garde :
+              </p>
+
+              <div className="flex gap-6">
+                <label>
+                  <input
+                    type="radio"
+                    name="changements"
+                    value="non"
+                    onChange={(e) =>
+                      setFormData({ ...formData, changements: e.target.value })
+                    }
+                  />{" "}
+                  Non
+                </label>
+
+                <label>
+                  <input
+                    type="radio"
+                    name="changements"
+                    value="oui"
+                    onChange={(e) =>
+                      setFormData({ ...formData, changements: e.target.value })
+                    }
+                  />{" "}
+                  Oui
+                </label>
+              </div>
+
+              {formData.changements === "oui" && (
+                <textarea
+                  placeholder="Décrivez les changements intervenus *"
+                  className="border p-3 rounded-xl w-full"
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      detailChangements: e.target.value,
+                    })
+                  }
+                />
+              )}
+            </div>
             </div>
         </section>
 
