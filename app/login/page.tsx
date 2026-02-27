@@ -15,7 +15,7 @@ export default function LoginPage() {
   const adminEmail = ["aux.pattounes59@gmail.com","bayadrien@gmail.com"]
 
   const checkUser = async (user: any) => {
-    if (user.email === adminEmail) {
+    if (adminEmail.includes(user.email)) {
       router.push("/dashboard");
     } else {
       alert("Accès refusé.");
