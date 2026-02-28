@@ -2,18 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
-import { db } from "@/lib/firebase";
 import { jsPDF } from "jspdf";
-
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  doc,
-  getDoc,
-} from "firebase/firestore";
 import SignatureCanvas from "react-signature-canvas";
 
 type ContractType = {
@@ -97,19 +86,15 @@ export default function ContratPage() {
           return;
         }
 
-        const contractData = await res.json();
+        const data = await res.json();
 
-        setContract(contractData);
+        // ⚡ IMPORTANT
+        // Ton API doit maintenant retourner :
+        // { contract, owner, dog }
 
-        const ownerSnap = await getDoc(doc(db, "owners", contractData.ownerId));
-        if (ownerSnap.exists()) {
-          setOwner({ id: ownerSnap.id, ...ownerSnap.data() });
-        }
-
-        const dogSnap = await getDoc(doc(db, "dogs", contractData.dogId));
-        if (dogSnap.exists()) {
-          setDog({ id: dogSnap.id, ...dogSnap.data() });
-        }
+        setContract(data.contract);
+        setOwner(data.owner);
+        setDog(data.dog);
 
       } catch (error) {
         console.error("Erreur récupération contrat:", error);
@@ -198,48 +183,12 @@ export default function ContratPage() {
     const data = await response.json();
 
     if (isFirstTime) {
-      await updateDoc(doc(db, "owners", owner.id), {
-        adresse: formData.adresse,
-        contratGeneralValide: true,
-        contratVersion: "v1",
-      });
-
-      await updateDoc(doc(db, "dogs", dog.id), {
-        ...formData,
-      });
     }
 
       const year = new Date().getFullYear();
       const contractNumber = `CALM-${year}-${contract.id.slice(0, 6).toUpperCase()}`;
 
-    await fetch("/api/sign-contract", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contractId: contract.id,
-        signatureUrl: data.url,
-        contractNumber: contractNumber,
-      }),
-    });
-
-    await fetch("/api/notify-admin/contract-initial", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        dogName: dog.nom,
-        ownerName: owner.prenom + " " + owner.nom,
-      }),
-    });
-
-    await fetch("/api/notify-client/contract-initial", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    dogName: dog.nom,
-    ownerName: owner.prenom + " " + owner.nom,
-    ownerEmail: owner.email,
-  }),
-});
+    
 
     // ==========================
     // 🔹 GENERATION PDF
@@ -497,15 +446,39 @@ export default function ContratPage() {
 
     const pdfUrl = uploadJson.secure_url;
 
-    // Sauvegarde dans le contrat
-    await updateDoc(doc(db, "contracts", contract.id), {
-      pdfUrl: pdfUrl,
+    await fetch("/api/sign-contract", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contractId: contract.id,
+        ownerId: owner.id,
+        dogId: dog.id,
+        signatureUrl: data.url,
+        contractNumber,
+        pdfUrl,
+        formData,
+      }),
     });
 
-    // Sauvegarde dans la fiche chien
-    await updateDoc(doc(db, "dogs", dog.id), {
-      dernierContratPdf: pdfUrl,
+    await fetch("/api/notify-admin/contract-initial", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dogName: dog.nom,
+        ownerName: owner.prenom + " " + owner.nom,
+      }),
     });
+
+    await fetch("/api/notify-client/contract-initial", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dogName: dog.nom,
+        ownerName: owner.prenom + " " + owner.nom,
+        ownerEmail: owner.email,
+      }),
+    });
+
   setSigned(true);
   };
 

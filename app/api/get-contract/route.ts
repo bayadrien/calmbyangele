@@ -6,7 +6,10 @@ export async function POST(req: Request) {
     const { token } = await req.json()
 
     if (!token) {
-      return NextResponse.json({ error: "Token manquant" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Token manquant" },
+        { status: 400 }
+      )
     }
 
     const snapshot = await adminDb
@@ -15,18 +18,40 @@ export async function POST(req: Request) {
       .get()
 
     if (snapshot.empty) {
-      return NextResponse.json({ error: "Contrat introuvable" }, { status: 404 })
+      return NextResponse.json(
+        { error: "Contrat introuvable" },
+        { status: 404 }
+      )
     }
 
-    const doc = snapshot.docs[0]
+    const docSnap = snapshot.docs[0]
+
+    const contract = {
+      id: docSnap.id,
+      ...(docSnap.data() as any),
+    }
+
+    const ownerSnap = await adminDb
+      .collection("owners")
+      .doc(contract.ownerId)
+      .get()
+
+    const dogSnap = await adminDb
+      .collection("dogs")
+      .doc(contract.dogId)
+      .get()
 
     return NextResponse.json({
-      id: doc.id,
-      ...doc.data(),
+      contract,
+      owner: ownerSnap.exists ? { id: ownerSnap.id, ...ownerSnap.data() } : null,
+      dog: dogSnap.exists ? { id: dogSnap.id, ...dogSnap.data() } : null,
     })
 
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
+    console.error("ERREUR API :", error)
+    return NextResponse.json(
+      { error: "Erreur serveur" },
+      { status: 500 }
+    )
   }
 }
