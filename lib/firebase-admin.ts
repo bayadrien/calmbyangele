@@ -1,7 +1,4 @@
-import admin from "firebase-admin"
-
-console.log("PROJECT ID ENV:", process.env.FIREBASE_PROJECT_ID)
-console.log("CLIENT EMAIL ENV:", process.env.FIREBASE_CLIENT_EMAIL)
+import * as admin from "firebase-admin"
 
 if (!admin.apps.length) {
   admin.initializeApp({
