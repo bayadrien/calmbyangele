@@ -323,8 +323,10 @@ export default function ContratSejourPage() {
             stayContractId: contract.id,
           }),
         });
-        
-        await fetch("/api/notify-contract-signed", {
+
+        const galleryUrl = `${process.env.NEXT_PUBLIC_APP_URL}/d/${dog.slug}`;
+
+        await fetch("/api/notify-admin/contract-avenant", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -332,7 +334,34 @@ export default function ContratSejourPage() {
             ownerName: owner.prenom + " " + owner.nom,
             dateDebut: contract.dateDebut,
             dateFin: contract.dateFin,
-            prix: contract.prix
+            prix: contract.prix,
+          }),
+        });
+
+        await fetch("/api/notify-client/contract-avenant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            dogName: dog.nom,
+            ownerName: owner.prenom + " " + owner.nom,
+            ownerEmail: owner.email,
+            dateDebut: contract.dateDebut,
+            dateFin: contract.dateFin,
+            prix: contract.prix,
+          }),
+        });
+
+        await fetch("/api/notify-client/gallery-access", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            dogName: dog.nom,
+            ownerName: owner.prenom + " " + owner.nom,
+            ownerEmail: owner.email,
+            galleryUrl,
+            accessCode: dog.motDePasse,
+            dateDebut: contract.dateDebut,
+            dateFin: contract.dateFin,
           }),
         });
 
@@ -423,7 +452,7 @@ export default function ContratSejourPage() {
 
             <p>
                 <strong>Tarif total :</strong>{" "}
-                {contract.prix || "-"} €
+                {contract.prix || "-"} 
             </p>
 
             <div className="space-y-3">

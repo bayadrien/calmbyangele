@@ -64,8 +64,8 @@ export default function Navbar() {
             {/* Signature tout en bas */}
             <div className="mt-auto pt-6 border-t border-gray-100 text-center">
               <p className="text-xs text-gray-400 tracking-wide">
-                Built with 💜 by 
-                <span className="font-semibold text-gray-500"> Bayadrien</span>
+                Built with 💜 by  
+                <span className="font-semibold transition-all duration-300 hover:text-purple-600 hover:drop-shadow-[0_0_6px_rgba(124,58,237,0.5)]"> Bayadrien</span>
               </p>
             </div>
 

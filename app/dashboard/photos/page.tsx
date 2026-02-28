@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, getDoc } from "firebase/firestore";
 
 export default function PhotosPage() {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -61,6 +61,42 @@ export default function PhotosPage() {
       caption: caption || "",
       createdAt: new Date(),
     });
+
+    const imageUrl = data.secure_url;
+
+    // Récupérer le booking sélectionné
+    const bookingSnap = await getDoc(doc(db, "bookings", selectedBooking));
+
+    if (bookingSnap.exists()) {
+      const bookingData = bookingSnap.data();
+
+      const dogSnap = await getDoc(doc(db, "dogs", bookingData.dogId));
+
+      if (dogSnap.exists()) {
+        const dogData = dogSnap.data();
+
+        // Vérifier si galerie activée
+        if (dogData.galleryEnabled) {
+          const ownerSnap = await getDoc(doc(db, "owners", dogData.ownerId));
+
+          if (ownerSnap.exists()) {
+            const ownerData = ownerSnap.data();
+
+            await fetch("/api/notify-client/gallery-update", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                dogName: dogData.nom,
+                ownerName: ownerData.prenom + " " + ownerData.nom,
+                ownerEmail: ownerData.email,
+                galleryUrl: `${process.env.NEXT_PUBLIC_APP_URL}/d/${dogData.slug}`,
+                imageUrl: imageUrl,
+              }),
+            });
+          }
+        }
+      }
+    }
 
     // Reset
     setCaption("");

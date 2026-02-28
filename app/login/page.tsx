@@ -16,6 +16,7 @@ export default function LoginPage() {
   const adminEmail = [
     "aux.pattounes59@gmail.com",
     "bayadrien@gmail.com",
+    "bayadrien@hotmail.fr"
   ];
 
   const [email, setEmail] = useState("");

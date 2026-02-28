@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { transporter } from "@/lib/mailer";
 
 export async function POST(req: Request) {
   try {

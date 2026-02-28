@@ -209,15 +209,24 @@ export default function ContratPage() {
       contractNumber: contractNumber,
     });
 
-    await fetch("/api/notify-contract-signed", {
+    await fetch("/api/notify-admin/contract-initial", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        type: "initial",
         dogName: dog.nom,
         ownerName: owner.prenom + " " + owner.nom,
       }),
     });
+
+    await fetch("/api/notify-client/contract-initial", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    dogName: dog.nom,
+    ownerName: owner.prenom + " " + owner.nom,
+    ownerEmail: owner.email,
+  }),
+});
 
     // ==========================
     // 🔹 GENERATION PDF

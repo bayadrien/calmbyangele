@@ -27,6 +27,8 @@ export default function AnimalAdminPage() {
   const [docCategory, setDocCategory] = useState("Contrat");
   const [uploading, setUploading] = useState(false);
   const [contracts, setContracts] = useState<any[]>([]);
+  const [owners, setOwners] = useState<any[]>([]);
+  const [dog, setDog] = useState<any>(null);
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
   const uploadPreset = "calm_unsigned";
@@ -96,6 +98,7 @@ export default function AnimalAdminPage() {
     fetchBookings();
     fetchDocuments();
     fetchContracts();
+    fetchOwners();
   }, [id]);
 
   const fetchAnimal = async () => {
@@ -106,6 +109,15 @@ export default function AnimalAdminPage() {
       setAnimal(data);
       setFormData(data);
     }
+  };
+
+  const fetchOwners = async () => {
+    const snap = await getDocs(collection(db, "owners"));
+    const data = snap.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+    }));
+    setOwners(data);
   };
 
   const fetchBookings = async () => {
@@ -253,6 +265,15 @@ export default function AnimalAdminPage() {
                 <>
                     <div className="grid grid-cols-2 gap-4">
 
+                    <p className="col-span-2">
+                        <strong>Propriétaire :</strong>{" "}
+                        {
+                          owners.find((o) => o.id === animal.ownerId)?.prenom +
+                          " " +
+                          owners.find((o) => o.id === animal.ownerId)?.nom
+                        }
+                      </p>
+
                     <p><strong>Sexe :</strong> {animal.sexe}</p>
                     <p>
                         <strong>
@@ -287,10 +308,65 @@ export default function AnimalAdminPage() {
                     >
                     Modifier
                     </button>
+
+                    <div className="mt-8 bg-purple-50 p-6 rounded-2xl space-y-4">
+                      <h3 className="text-lg font-semibold text-purple-900">
+                        🔐 Galerie publique
+                      </h3>
+                        <label className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-purple-200">
+                          <span className="text-gray-800 font-medium">
+                            Activer l’accès à la galerie
+                          </span>
+
+                          <button
+                            onClick={async () => {
+                              const newValue = !animal.galleryEnabled;
+
+                              await updateDoc(doc(db, "dogs", animal.id), {
+                                galleryEnabled: newValue,
+                              });
+
+                              setAnimal({
+                                ...animal,
+                                galleryEnabled: newValue,
+                              });
+                            }}
+                            className={`relative w-14 h-8 rounded-full transition-all duration-300 ${
+                              animal.galleryEnabled ? "bg-purple-600" : "bg-gray-300"
+                            }`}
+                          >
+                            <span
+                              className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transform transition-all duration-300 ${
+                                animal.galleryEnabled ? "translate-x-6" : ""
+                              }`}
+                            />
+                          </button>
+                        </label>
+                      <p className="text-sm text-gray-600">
+                        Lorsque désactivée, la page publique du chien sera inaccessible même avec le mot de passe.
+                      </p>
+                    </div>
                 </>
                 ) : (
                 <>
                     <div className="grid grid-cols-2 gap-4">
+                      
+                    {/* Propriétaire */}
+                    <select
+                      value={formData.ownerId || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, ownerId: e.target.value })
+                      }
+                      className="border p-2 rounded-lg w-full col-span-2"
+                    >
+                      <option value="">Sélectionner un propriétaire</option>
+
+                      {owners.map((owner) => (
+                        <option key={owner.id} value={owner.id}>
+                          {owner.prenom} {owner.nom}
+                        </option>
+                      ))}
+                    </select>
 
                     {/* Sexe */}
                     <select
