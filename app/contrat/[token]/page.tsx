@@ -85,24 +85,34 @@ export default function ContratPage() {
     if (!token) return;
 
     const fetchData = async () => {
-      const q = query(collection(db, "contracts"), where("token", "==", token));
-      const snapshot = await getDocs(q);
+      try {
+        const res = await fetch("/api/get-contract", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
 
-      if (!snapshot.empty) {
-        const contractData = {
-          id: snapshot.docs[0].id,
-          ...(snapshot.docs[0].data() as Omit<ContractType, "id">),
-        } as ContractType;
+        if (!res.ok) {
+          setLoading(false);
+          return;
+        }
+
+        const contractData = await res.json();
 
         setContract(contractData);
 
         const ownerSnap = await getDoc(doc(db, "owners", contractData.ownerId));
-        if (ownerSnap.exists())
+        if (ownerSnap.exists()) {
           setOwner({ id: ownerSnap.id, ...ownerSnap.data() });
+        }
 
         const dogSnap = await getDoc(doc(db, "dogs", contractData.dogId));
-        if (dogSnap.exists())
+        if (dogSnap.exists()) {
           setDog({ id: dogSnap.id, ...dogSnap.data() });
+        }
+
+      } catch (error) {
+        console.error("Erreur récupération contrat:", error);
       }
 
       setLoading(false);
@@ -202,11 +212,14 @@ export default function ContratPage() {
       const year = new Date().getFullYear();
       const contractNumber = `CALM-${year}-${contract.id.slice(0, 6).toUpperCase()}`;
 
-    await updateDoc(doc(db, "contracts", contract.id), {
-      statut: "signé",
-      signatureUrl: data.url,
-      signedAt: new Date(),
-      contractNumber: contractNumber,
+    await fetch("/api/sign-contract", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contractId: contract.id,
+        signatureUrl: data.url,
+        contractNumber: contractNumber,
+      }),
     });
 
     await fetch("/api/notify-admin/contract-initial", {
