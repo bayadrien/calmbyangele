@@ -17,8 +17,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "ID manquant" }, { status: 400 });
     }
 
-    console.log("SIGN CONTRACT CALLED:", contractId);
-
     await adminDb.collection("contracts").doc(contractId).update({
       statut: "signé",
       signatureUrl,

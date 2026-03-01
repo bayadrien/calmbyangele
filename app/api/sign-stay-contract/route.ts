@@ -10,8 +10,13 @@ export async function POST(req: Request) {
       pdfUrl,
       signatureUrl,
       changements,
+      formData,
       detailChangements,
     } = await req.json();
+
+if (!contractId) {
+return NextResponse.json({ error: "ID manquant" }, { status: 400 });
+}
 
     await adminDb.collection("stayContracts").doc(contractId).update({
       statut: "signé",
@@ -43,23 +48,6 @@ export async function POST(req: Request) {
       category: "Contrat",
       createdAt: new Date(),
     });
-
-// ==========================
-// 📩 ENVOI MAIL ADMIN
-// ==========================
-
-await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/notify-admin/contract-avenant`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    type: "avenant",
-    dogName: (await adminDb.collection("dogs").doc(dogId).get()).data()?.nom,
-    ownerName: "Propriétaire", // si tu veux on peut récupérer le vrai nom
-    dateDebut: (await adminDb.collection("stayContracts").doc(contractId).get()).data()?.dateDebut,
-    dateFin: (await adminDb.collection("stayContracts").doc(contractId).get()).data()?.dateFin,
-    prix: (await adminDb.collection("stayContracts").doc(contractId).get()).data()?.prix,
-  }),
-});
 
     return NextResponse.json({ success: true });
 

@@ -336,7 +336,33 @@ export default function ContratSejourPage() {
       alert("Erreur signature serveur");
       return;
     }
+    
+  // 🔔 MAIL ADMIN
+  await fetch("/api/notify-admin/contract-avenant", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      dogName: dog.nom,
+      ownerName: owner.prenom + " " + owner.nom,
+      dateDebut: contract.dateDebut,
+      dateFin: contract.dateFin,
+      prix: contract.prix,
+    }),
+  });
 
+  // 🔔 MAIL CLIENT
+  await fetch("/api/notify-client/contract-avenant", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      dogName: dog.nom,
+      ownerName: owner.prenom + " " + owner.nom,
+      ownerEmail: owner.email,
+      dateDebut: contract.dateDebut,
+      dateFin: contract.dateFin,
+      prix: contract.prix,
+    }),
+  });
     setSigned(true);
   };
 
