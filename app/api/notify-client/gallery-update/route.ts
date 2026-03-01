@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { adminDb } from "@/lib/firebase-admin";
 
 export async function POST(req: Request) {
   try {
     const {
+      dogId,
       dogName,
       ownerName,
       ownerEmail,
@@ -11,6 +13,12 @@ export async function POST(req: Request) {
       photoCount,
       imageUrl,
     } = await req.json();
+
+console.log("BODY RECEIVED:", {
+  dogId,
+  dogName,
+  ownerEmail,
+});
 
     if (!dogName || !ownerName || !ownerEmail || !galleryUrl) {
       return NextResponse.json(
@@ -116,7 +124,7 @@ export async function POST(req: Request) {
     <div style="text-align:center; margin-top:30px;">
       <a href="${galleryUrl}"
          style="display:inline-block; background:linear-gradient(135deg,#7c3aed,#5b21b6); color:#ffffff; padding:14px 28px; border-radius:12px; text-decoration:none; font-weight:600; box-shadow:0 8px 20px rgba(124,58,237,0.3);">
-         Voir la nouvelle photo
+         Accéder à la galerie
       </a>
     </div>
 
@@ -154,6 +162,17 @@ export async function POST(req: Request) {
       subject,
       html: htmlContent,
     });
+
+console.log("Updating Firestore for dog:", dogId);
+
+    // ✅ Met à jour le timestamp côté serveur
+    if (dogId) {
+      await adminDb.collection("dogs").doc(dogId).update({
+        lastGalleryNotification: new Date(),
+      });
+}
+
+console.log("Firestore updated successfully");
 
     return NextResponse.json({ success: true });
   } catch (error) {

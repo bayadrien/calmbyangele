@@ -13,6 +13,7 @@ import {
   where,
   addDoc,
   deleteDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 
 export default function AnimalAdminPage() {
@@ -40,7 +41,6 @@ export default function AnimalAdminPage() {
     "Vaccins",
     "Autre",
   ];
-
     const handleProfileUpload = async (file: File) => {
     const formDataUpload = new FormData();
     formDataUpload.append("file", file);
@@ -156,6 +156,7 @@ export default function AnimalAdminPage() {
   };
 
   const handleDocUpload = async (file: File) => {
+   console.log("HANDLE UPLOAD CALLED");
     setUploading(true);
 
     const formDataUpload = new FormData();
@@ -177,9 +178,108 @@ export default function AnimalAdminPage() {
       createdAt: new Date(),
     });
 
-    setUploading(false);
-    fetchDocuments();
-  };
+  // 🔔 NOTIFICATION INTELLIGENTE
+
+  if (animal.galleryEnabled) {
+    const owner = owners.find((o) => o.id === animal.ownerId);
+
+    if (owner) {
+
+      // 🔎 On récupère la vraie valeur Firestore proprement
+      let lastSent: Date | null = null;
+
+      if (animal.lastGalleryNotification?.seconds) {
+        lastSent = new Date(
+          animal.lastGalleryNotification.seconds * 1000
+        );
+      } else if (animal.lastGalleryNotification) {
+        lastSent = new Date(animal.lastGalleryNotification);
+      }
+
+      const now = new Date();
+      const sixHours = 6 * 60 * 60 * 1000; // 6 heures
+
+      const shouldSend =
+        !lastSent || now.getTime() - lastSent.getTime() > sixHours;
+
+console.log("----- DEBUG NOTIF -----");
+console.log("galleryEnabled:", animal.galleryEnabled);
+console.log("lastGalleryNotification raw:", animal.lastGalleryNotification);
+console.log("lastSent:", lastSent);
+console.log("now:", now);
+console.log("shouldSend:", shouldSend);
+
+      if (shouldSend) {
+        await fetch("/api/send-gallery-access", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            dogName: animal.nom,
+            ownerName: owner.prenom + " " + owner.nom,
+            ownerEmail: owner.email,
+            galleryUrl: `${process.env.NEXT_PUBLIC_APP_URL}/d/${animal.slug}`,
+            accessCode: animal.motDePasse,
+            auto: true,
+          }),
+        });
+
+        // ✅ Timestamp serveur propre
+        console.log("Updating timestamp...");
+        await updateDoc(doc(db, "dogs", animal.id), {
+          lastGalleryNotification: serverTimestamp(),
+        });
+        console.log("Update sent");
+        // 🔄 On recharge les données depuis Firestore
+        await fetchAnimal();
+      }
+  }
+  }
+
+setUploading(false);
+fetchDocuments();
+};
+
+    const handleSendGallery = async () => {
+  if (!animal) {
+    alert("Animal introuvable");
+    return;
+  }
+
+  const owner = owners.find((o) => o.id === animal.ownerId);
+
+  if (!owner) {
+    alert("Propriétaire introuvable");
+    return;
+  }
+
+  const confirmSend = confirm(
+    "Envoyer le lien de la galerie au client ?"
+  );
+
+  if (!confirmSend) return;
+
+  const res = await fetch("/api/send-gallery-access", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      dogName: animal.nom,
+      ownerName: owner.prenom + " " + owner.nom,
+      ownerEmail: owner.email,
+      galleryUrl: `${process.env.NEXT_PUBLIC_APP_URL}/d/${animal.slug}`,
+      accessCode: animal.motDePasse,
+    }),
+  });
+
+  if (!res.ok) {
+    alert("Erreur envoi mail");
+    return;
+  }
+
+  alert("📸 Mail envoyé avec succès !");
+};
+    
+console.log("ID:", id);
+console.log("DOG:", dog);
 
   const handleDelete = async (docId: string) => {
     await deleteDoc(doc(db, "documents", docId));
@@ -342,6 +442,22 @@ export default function AnimalAdminPage() {
                             />
                           </button>
                         </label>
+                        <button
+                          onClick={handleSendGallery}
+                          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl"
+                        >
+                          📸 Envoyer accès galerie
+                        </button>
+                        {animal.lastGalleryNotification && (
+                          <p className="text-sm text-gray-500 mt-2">
+                            📩 Dernière notification envoyée le{" "}
+                            {animal.lastGalleryNotification?.seconds
+                              ? new Date(
+                                  animal.lastGalleryNotification.seconds * 1000
+                                ).toLocaleString()
+                              : new Date(animal.lastGalleryNotification).toLocaleString()}
+                          </p>
+                        )}
                       <p className="text-sm text-gray-600">
                         Lorsque désactivée, la page publique du chien sera inaccessible même avec le mot de passe.
                       </p>

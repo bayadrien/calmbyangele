@@ -86,6 +86,7 @@ export default function PhotosPage() {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
+                dogId: bookingData.dogId,
                 dogName: dogData.nom,
                 ownerName: ownerData.prenom + " " + ownerData.nom,
                 ownerEmail: ownerData.email,
