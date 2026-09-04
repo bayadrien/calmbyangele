@@ -15,5 +15,6 @@ service cloud.firestore {
     match /photos/{document=**} { allow read, write: if isAdmin(); }
     match /documents/{document=**} { allow read, write: if isAdmin(); }
     match /unavailabilities/{document=**} { allow read, write: if isAdmin(); }
+    match /inquiries/{document=**} { allow read, write: if isAdmin(); }
   }
 }

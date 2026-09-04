@@ -13,6 +13,7 @@ const items = [
   { href: "/dashboard/bookings", icon: "□", label: "Les séjours" },
   { href: "/dashboard/calendar", icon: "◫", label: "Le calendrier" },
   { href: "/dashboard/photos", icon: "◈", label: "Les souvenirs" },
+  { href: "/dashboard/requests", icon: "✦", label: "Les demandes" },
 ];
 
 export default function Navbar() {
