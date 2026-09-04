@@ -106,16 +106,16 @@ export default function ContratPage() {
     fetchData();
   }, [token]);
 
-  if (loading) return <div className="p-10">Chargement...</div>;
-  if (!contract) return <div className="p-10">Contrat introuvable.</div>;
-  if (!owner || !dog) return <div className="p-10">Chargement...</div>;
+  if (loading) return <main className="public-calm grid min-h-screen place-items-center"><div className="loading-mark">♧</div></main>;
+  if (!contract) return <main className="public-calm grid min-h-screen place-items-center p-6 text-center text-[#315e4e]">Ce lien de contrat n’est plus disponible.</main>;
+  if (!owner || !dog) return <main className="public-calm grid min-h-screen place-items-center"><div className="loading-mark">♧</div></main>;
 
   if (signed || contract.statut === "signé") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-purple-50">
-        <div className="bg-white p-8 rounded-2xl shadow-xl text-center">
+      <div className="public-calm min-h-screen flex items-center justify-center p-6">
+        <div className="access-card text-center">
           <h1 className="text-2xl font-bold text-green-600 mb-4">
-            ✅ Contrat signé avec succès !
+            Contrat signé, merci !
           </h1>
         </div>
       </div>
@@ -487,22 +487,22 @@ export default function ContratPage() {
 
 return (
 <div id="contract-content">
-  <div className="min-h-screen bg-purple-50 py-12 px-6 flex justify-center">
-    <div className="bg-white shadow-2xl rounded-3xl p-12 max-w-4xl w-full space-y-12">
+  <div className="public-calm min-h-screen py-10 px-4 sm:px-6 flex justify-center">
+    <div className="bg-white shadow-2xl rounded-[2rem] p-6 sm:p-12 max-w-4xl w-full space-y-12">
 
       <div className="text-center space-y-2">
         <h1 className="text-4xl font-bold text-purple-900">
-          Contrat Général de Pet-Sitting
+          Bienvenue chez CALM
         </h1>
         <p className="text-gray-600">
-          Comme A La Maison by Angèle – Bourbourg
+          Contrat de garde · à compléter en toute simplicité
         </p>
       </div>
 
 {/* SECTION 1 */}
 <section className="space-y-8">
   <h2 className="text-2xl font-semibold text-purple-800 border-b pb-2">
-    1. Identification des parties
+    1. Faisons connaissance
   </h2>
 
   <div className="space-y-6 text-gray-800 leading-relaxed">
@@ -514,7 +514,7 @@ return (
     {/* PROPRIETAIRE */}
     <div className="bg-purple-50 p-6 rounded-2xl space-y-4">
       <h3 className="font-semibold text-lg text-purple-900">
-        Le Propriétaire :
+        Votre famille
       </h3>
 
       {isFirstTime && (

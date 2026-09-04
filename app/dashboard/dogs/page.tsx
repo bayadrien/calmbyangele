@@ -139,18 +139,16 @@ export default function AnimalsPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-purple-900 mb-8">
-        Gestion des Animaux
-      </h1>
+      <header className="page-intro mb-8"><div><p className="eyebrow">Les animaux</p><h1>Chaque personnalité a sa fiche.</h1><p>Le point de départ pour préparer un accueil attentif et sur mesure.</p></div><span className="page-count">{animals.length} compagnon{animals.length > 1 ? "s" : ""}</span></header>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+      <section className="calm-panel mb-10"><div className="section-heading"><div><p className="eyebrow">Nouveau compagnon</p><h2>Créer sa fiche</h2></div></div><form onSubmit={handleSubmit} className="calm-form-grid">
 
         <select
           value={form.type}
           onChange={(e) =>
             setForm({ ...form, type: e.target.value })
           }
-          className="border border-purple-300 bg-white p-3 rounded-xl text-gray-900"
+          className="calm-control"
         >
           <option value="chien">🐶 Chien</option>
           <option value="chat">🐱 Chat</option>
@@ -159,21 +157,21 @@ export default function AnimalsPage() {
         </select>
 
         <input
-          placeholder="Nom"
+          placeholder="Son prénom"
           value={form.nom}
           onChange={(e) =>
             setForm({ ...form, nom: e.target.value })
           }
-          className="border border-purple-300 bg-white p-3 rounded-xl text-gray-900"
+          className="calm-control"
         />
 
         <input
-          placeholder="Race / Espèce"
+          placeholder="Race ou espèce"
           value={form.race}
           onChange={(e) =>
             setForm({ ...form, race: e.target.value })
           }
-          className="border border-purple-300 bg-white p-3 rounded-xl text-gray-900"
+          className="calm-control"
         />
 
         <input
@@ -182,7 +180,7 @@ export default function AnimalsPage() {
           onChange={(e) =>
             setForm({ ...form, dateNaissance: e.target.value })
           }
-          className="border border-purple-300 bg-white p-3 rounded-xl text-gray-900"
+          className="calm-control"
         />
 
         <select
@@ -190,9 +188,9 @@ export default function AnimalsPage() {
           onChange={(e) =>
             setForm({ ...form, ownerId: e.target.value })
           }
-          className="border border-purple-300 bg-white p-3 rounded-xl text-gray-900 md:col-span-2"
+          className="calm-control md:col-span-2"
         >
-          <option value="">Sélectionner un maître</option>
+          <option value="">Choisir sa famille</option>
           {owners.map((owner) => (
             <option key={owner.id} value={owner.id}>
               {owner.prenom} {owner.nom}
@@ -202,32 +200,32 @@ export default function AnimalsPage() {
 
         <button
           type="submit"
-          className="md:col-span-2 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-xl shadow-md transition"
+          className="calm-primary md:col-span-2"
         >
-          Ajouter l’animal
+          Ajouter ce compagnon <span>→</span>
         </button>
-      </form>
+      </form></section>
 
       <div className="space-y-4">
         {animals.map((animal) => (
           <div
             key={animal.id}
-            className="bg-purple-50 p-5 rounded-2xl shadow border border-purple-200"
+            className="pet-card"
           >
             <p className="font-semibold text-purple-900 text-lg">
-              {getEmoji(animal.type)} {animal.nom}
+              <span>{getEmoji(animal.type)}</span> {animal.nom}
             </p>
             <p className="text-sm text-gray-800">
               {animal.race}
             </p>
             <p className="text-xs text-gray-600 mt-2">
-              Slug : {animal.slug} | MDP : {animal.motDePasse}
+              Galerie privée prête à partager
             </p>
             <a
                 href={`/dashboard/dogs/${animal.id}`}
                 className="text-purple-700 text-sm underline"
             >
-                Voir la fiche admin →
+                Ouvrir la fiche complète →
             </a>
 
             <div className="flex items-center gap-3 mt-3">
@@ -257,7 +255,7 @@ export default function AnimalsPage() {
                   onClick={() => createContract(animal.id, animal.ownerId)}
                   className="bg-purple-600 text-white px-4 py-2 rounded-xl"
                 >
-                  Créer un contrat
+                  Préparer le contrat
                 </button>
               )}
 
@@ -269,11 +267,11 @@ export default function AnimalsPage() {
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full">
               <h2 className="text-xl font-bold text-purple-900 mb-4">
-                Contrat créé 🎉
+                Contrat prêt à envoyer
               </h2>
 
               <p className="text-sm text-gray-700 mb-3">
-                Envoie ce lien au client :
+                Transmettez ce lien à la famille :
               </p>
 
               <input

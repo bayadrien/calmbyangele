@@ -6,237 +6,27 @@ import { collection, addDoc, getDocs, doc, getDoc } from "firebase/firestore";
 import { formatDate } from "@/lib/formatDate";
 
 export default function PhotosPage() {
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [selectedBooking, setSelectedBooking] = useState("");
-  const [caption, setCaption] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [photoCount, setPhotoCount] = useState(0);
-
+  const [bookings, setBookings] = useState<any[]>([]); const [selectedBooking, setSelectedBooking] = useState(""); const [caption, setCaption] = useState(""); const [uploading, setUploading] = useState(false); const [selectedFile, setSelectedFile] = useState<File | null>(null); const [previewUrl, setPreviewUrl] = useState<string | null>(null); const [photoCount, setPhotoCount] = useState(0);
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
-  const uploadPreset = "calm_unsigned";
-
-  const fetchBookings = async () => {
-    const snapshot = await getDocs(collection(db, "bookings"));
-
-    const data = await Promise.all(
-      snapshot.docs.map(async (bookingDoc) => {
-        const booking = { id: bookingDoc.id, ...(bookingDoc.data() as any) };
-        const dogSnap = await getDoc(doc(db, "dogs", booking.dogId));
-
-        return {
-          ...booking,
-          dogName: dogSnap.exists() ? dogSnap.data().nom : "Chien inconnu",
-        };
-      })
-    );
-
-    setBookings(data);
-  };
-
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
-  useEffect(() => {
-    const fetchPhotoCount = async () => {
-      if (!selectedBooking) return;
-
-      const snapshot = await getDocs(collection(db, "photos"));
-
-      const count = snapshot.docs.filter(
-        (doc) => doc.data().bookingId === selectedBooking
-      ).length;
-
-      setPhotoCount(count);
-    };
-
-    fetchPhotoCount();
-  }, [selectedBooking]);
-
+  const fetchBookings = async () => setBookings(await Promise.all((await getDocs(collection(db, "bookings"))).docs.map(async (bookingDoc) => { const booking = { id: bookingDoc.id, ...(bookingDoc.data() as any) }; const dogSnap = await getDoc(doc(db, "dogs", booking.dogId)); return { ...booking, dogName: dogSnap.exists() ? dogSnap.data().nom : "Animal inconnu" }; })));
+  useEffect(() => { fetchBookings(); }, []);
+  useEffect(() => { if (!selectedBooking) { setPhotoCount(0); return; } getDocs(collection(db, "photos")).then((snapshot) => setPhotoCount(snapshot.docs.filter((photo) => photo.data().bookingId === selectedBooking).length)); }, [selectedBooking]);
+  const chooseFile = (file?: File) => { if (!file) return; setSelectedFile(file); setPreviewUrl(URL.createObjectURL(file)); };
   const handleUpload = async () => {
-    if (!selectedBooking) {
-      alert("Sélectionne un séjour.");
-      return;
-    }
-
-    if (!selectedFile) {
-      alert("Choisis une photo.");
-      return;
-    }
-
-    setUploading(true);
-
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-    formData.append("upload_preset", uploadPreset);
-
-    const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
-    const data = await res.json();
-
-    await addDoc(collection(db, "photos"), {
-      bookingId: selectedBooking,
-      imageUrl: data.secure_url,
-      caption: caption || "",
-      createdAt: new Date(),
-    });
-
-    const imageUrl = data.secure_url;
-
-    // Récupérer le booking sélectionné
-    const bookingSnap = await getDoc(doc(db, "bookings", selectedBooking));
-
-    if (bookingSnap.exists()) {
-      const bookingData = bookingSnap.data();
-
-      const dogSnap = await getDoc(doc(db, "dogs", bookingData.dogId));
-
-      if (dogSnap.exists()) {
-        const dogData = dogSnap.data();
-
-        // Vérifier si galerie activée
-        if (dogData.galleryEnabled) {
-          const ownerSnap = await getDoc(doc(db, "owners", dogData.ownerId));
-
-          if (ownerSnap.exists()) {
-            const ownerData = ownerSnap.data();
-
-            await fetch("/api/notify-client/gallery-update", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` },
-              body: JSON.stringify({
-                dogId: bookingData.dogId,
-                dogName: dogData.nom,
-                ownerName: ownerData.prenom + " " + ownerData.nom,
-                ownerEmail: ownerData.email,
-                galleryUrl: `${process.env.NEXT_PUBLIC_APP_URL}/d/${dogData.slug}`,
-                imageUrl: imageUrl,
-              }),
-            });
-          }
-        }
-      }
-    }
-
-    // Reset
-    setCaption("");
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    setUploading(false);
-
-    alert("Photo ajoutée 💜");
+    if (!selectedBooking) return alert("Choisissez le séjour auquel rattacher ce souvenir."); if (!selectedFile) return alert("Choisissez une photo avant de continuer."); setUploading(true);
+    try { const formData = new FormData(); formData.append("file", selectedFile); formData.append("upload_preset", "calm_unsigned"); const data = await (await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body: formData })).json(); await addDoc(collection(db, "photos"), { bookingId: selectedBooking, imageUrl: data.secure_url, caption: caption || "", createdAt: new Date() });
+      const bookingSnap = await getDoc(doc(db, "bookings", selectedBooking)); if (bookingSnap.exists()) { const booking = bookingSnap.data(); const dogSnap = await getDoc(doc(db, "dogs", booking.dogId)); if (dogSnap.exists() && dogSnap.data().galleryEnabled) { const dog = dogSnap.data(); const ownerSnap = await getDoc(doc(db, "owners", dog.ownerId)); if (ownerSnap.exists()) { const owner = ownerSnap.data(); await fetch("/api/notify-client/gallery-update", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` }, body: JSON.stringify({ dogId: booking.dogId, dogName: dog.nom, ownerName: `${owner.prenom} ${owner.nom}`, ownerEmail: owner.email, galleryUrl: `${process.env.NEXT_PUBLIC_APP_URL}/d/${dog.slug}`, imageUrl: data.secure_url }) }); } } }
+      setCaption(""); setSelectedFile(null); setPreviewUrl(null); setPhotoCount((count) => count + 1); alert("Le souvenir a bien été ajouté à la galerie.");
+    } catch { alert("La photo n’a pas pu être ajoutée. Réessayez dans un instant."); } finally { setUploading(false); }
   };
-
-  return (
-    <div className="min-h-screen bg-purple-200 p-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl p-8">
-        <h1 className="text-2xl font-bold text-purple-900 mb-6">
-          Ajouter une photo
-        </h1>
-
-        {/* Sélection séjour */}
-        <select
-          value={selectedBooking}
-          onChange={(e) => setSelectedBooking(e.target.value)}
-          className="border border-purple-400 bg-white p-3 rounded-xl text-gray-900 mb-6 w-full focus:outline-none focus:ring-2 focus:ring-purple-400"
-        >
-          <option value="">Sélectionner un séjour</option>
-          {bookings.map((booking) => (
-            <option key={booking.id} value={booking.id}>
-              {booking.dogName} • {formatDate(booking.dateDebut)} → {formatDate(booking.dateFin)}
-            </option>
-          ))}
-        </select>
-
-        {selectedBooking && (
-          <p className="text-sm text-purple-700 mb-4">
-            📸 {photoCount} photo{photoCount > 1 ? "s" : ""} déjà dans ce séjour
-          </p>
-        )}
-
-        {/* Zone upload photo */}
-        <div className="mb-6">
-          <label className="flex flex-col items-center justify-center border-2 border-dashed border-purple-400 bg-purple-50 hover:bg-purple-100 transition rounded-2xl p-8 cursor-pointer text-center">
-
-            <div className="text-4xl mb-2">📸</div>
-
-            <p className="text-purple-800 font-semibold">
-              Cliquez pour sélectionner une photo
-            </p>
-
-            <p className="text-sm text-gray-600 mt-1">
-              JPG, PNG ou HEIC
-            </p>
-
-            <input
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => {
-                if (e.target.files) {
-                  const file = e.target.files[0];
-                  setSelectedFile(file);
-                  setPreviewUrl(URL.createObjectURL(file));
-                }
-              }}
-            />
-          </label>
-
-          {selectedFile && (
-            <p className="text-sm text-gray-700 mt-3 text-center">
-              📄 {selectedFile.name}
-            </p>
-          )}
-        </div>
-
-        {/* Aperçu image */}
-        {previewUrl && (
-          <div className="mb-6">
-            <img
-              src={previewUrl}
-              alt="Preview"
-              className="rounded-2xl shadow-md max-h-72"
-            />
-          </div>
-        )}
-
-        {selectedFile && (
-          <button
-            onClick={() => {
-              setSelectedFile(null);
-              setPreviewUrl(null);
-            }}
-            className="text-red-500 text-sm mt-2"
-          >
-            Supprimer la photo
-          </button>
-        )}
-
-        {/* Caption */}
-        <textarea
-          placeholder="Petit texte (optionnel)"
-          value={caption}
-          onChange={(e) => setCaption(e.target.value)}
-          className="border border-purple-400 bg-white p-3 rounded-xl text-gray-900 placeholder-gray-400 w-full mb-6 focus:outline-none focus:ring-2 focus:ring-purple-400"
-        />
-
-        {/* Bouton upload */}
-        <button
-          onClick={handleUpload}
-          disabled={uploading}
-          className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 text-white px-6 py-3 rounded-xl shadow-md transition"
-        >
-          {uploading ? "Upload en cours..." : "Uploader la photo"}
-        </button>
-      </div>
-    </div>
-  );
+  return <div className="space-y-8"><header className="page-intro"><div><p className="eyebrow">Les souvenirs</p><h1>Un séjour se raconte aussi en images.</h1><p>Ajoutez une attention visuelle à la galerie privée de chaque compagnon.</p></div></header>
+    <section className="calm-panel max-w-4xl"><div className="section-heading"><div><p className="eyebrow">Nouvelle image</p><h2>Créer un souvenir</h2></div>{selectedBooking && <span className="page-count">{photoCount} photo{photoCount > 1 ? "s" : ""}</span>}</div>
+      <label className="calm-label">Séjour concerné<select value={selectedBooking} onChange={(event) => setSelectedBooking(event.target.value)}><option value="">Choisir un séjour</option>{bookings.map((booking) => <option key={booking.id} value={booking.id}>{booking.dogName} · {formatDate(booking.dateDebut)} — {formatDate(booking.dateFin)}</option>)}</select></label>
+      <label className="upload-well mt-5"><input type="file" accept="image/*" hidden onChange={(event) => chooseFile(event.target.files?.[0])} /><span className="upload-icon">◈</span><strong>{selectedFile ? "Changer de photo" : "Choisir une photo"}</strong><small>JPG, PNG ou HEIC · une image à la fois</small></label>
+      {selectedFile && <div className="mt-4 flex items-center justify-between rounded-2xl bg-[#f1f5ef] px-4 py-3 text-sm text-[#40584d]"><span className="truncate">{selectedFile.name}</span><button onClick={() => { setSelectedFile(null); setPreviewUrl(null); }} className="text-[#a95537]">Retirer</button></div>}
+      {previewUrl && <img src={previewUrl} alt="Aperçu de la photo" className="mt-5 max-h-80 w-full rounded-2xl object-cover" />}
+      <label className="calm-label mt-5">Un petit mot <span className="label-optional">facultatif</span><textarea rows={3} placeholder="Par exemple : première balade au soleil…" value={caption} onChange={(event) => setCaption(event.target.value)} /></label>
+      <button onClick={handleUpload} disabled={uploading} className="calm-primary mt-6 w-full disabled:opacity-50">{uploading ? "Ajout en cours…" : "Ajouter à la galerie"} <span>→</span></button>
+    </section>
+  </div>;
 }

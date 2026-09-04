@@ -169,20 +169,19 @@ export default function BookingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-purple-100 p-8">
-      <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-8">
-        <h1 className="text-2xl font-bold text-purple-900 mb-6">
-          Gestion des Séjours
-        </h1>
+    <div className="space-y-8">
+      <header className="page-intro"><div><p className="eyebrow">Les séjours</p><h1>Le rythme doux de la maison.</h1><p>Planifiez chaque accueil, gardez le contrat à portée de main et ne perdez aucun détail.</p></div><span className="page-count">{bookings.length} séjour{bookings.length > 1 ? "s" : ""}</span></header>
+      <div className="calm-panel">
+        <div className="section-heading"><div><p className="eyebrow">Nouvel accueil</p><h2>Programmer un séjour</h2></div><p>Le contrat complémentaire est préparé automatiquement.</p></div>
 
         {/* FORM */}
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 mb-8">
+        <form onSubmit={handleSubmit} className="calm-form-grid mb-10">
           <select
             value={form.dogId}
             onChange={(e) =>
               setForm({ ...form, dogId: e.target.value })
             }
-            className="border border-purple-300 p-2 rounded-lg"
+            className="calm-control"
           >
             <option value="">Sélectionner un chien</option>
             {dogs.map((dog) => (
@@ -198,7 +197,7 @@ export default function BookingsPage() {
             onChange={(e) =>
               setForm({ ...form, dateDebut: e.target.value })
             }
-            className="border border-purple-300 p-2 rounded-lg"
+            className="calm-control"
           />
 
           <input
@@ -207,32 +206,32 @@ export default function BookingsPage() {
             onChange={(e) =>
               setForm({ ...form, dateFin: e.target.value })
             }
-            className="border border-purple-300 p-2 rounded-lg"
+            className="calm-control"
           />
 
           <input
-            placeholder="Prix"
+            placeholder="Tarif du séjour (€)"
             value={form.prix}
             onChange={(e) =>
               setForm({ ...form, prix: e.target.value })
             }
-            className="border border-purple-300 p-2 rounded-lg"
+            className="calm-control"
           />
 
           <textarea
-            placeholder="Notes publiques"
+            placeholder="Une note à transmettre à la famille (facultatif)"
             value={form.notesPubliques}
             onChange={(e) =>
               setForm({ ...form, notesPubliques: e.target.value })
             }
-            className="col-span-2 border border-purple-300 p-2 rounded-lg"
+            className="col-span-2 calm-control min-h-24"
           />
 
           <button
             type="submit"
-            className="col-span-2 bg-purple-500 text-white p-3 rounded-xl"
+            className="calm-primary col-span-2"
           >
-            Ajouter le séjour
+            Créer le séjour <span>→</span>
           </button>
         </form>
 
@@ -243,9 +242,9 @@ export default function BookingsPage() {
             return (
               <div
                 key={booking.id}
-                className="bg-purple-100 p-4 rounded-xl mb-3 shadow-md"
+                className="stay-card"
               >
-                <p className="font-semibold text-purple-900">
+                <p className="text-lg font-bold text-[#1d3029]">
                   {dog?.nom || "Chien inconnu"}
                 </p>
 
@@ -260,7 +259,7 @@ export default function BookingsPage() {
                           dateDebut: e.target.value,
                         })
                       }
-                      className="border p-2 rounded-lg"
+                      className="calm-control"
                     />
 
                     <input
@@ -272,20 +271,20 @@ export default function BookingsPage() {
                           dateFin: e.target.value,
                         })
                       }
-                      className="border p-2 rounded-lg"
+                      className="calm-control"
                     />
 
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleUpdateDates(booking)}
-                        className="bg-purple-600 text-white px-3 py-1 rounded-lg"
+                        className="calm-primary px-4 py-2 text-sm"
                       >
                         Enregistrer
                       </button>
 
                       <button
                         onClick={() => setEditingId(null)}
-                        className="text-gray-500"
+                        className="text-sm text-[#718078]"
                       >
                         Annuler
                       </button>
@@ -305,7 +304,7 @@ export default function BookingsPage() {
                           <a
                             href={booking.stayContractLink}
                             target="_blank"
-                            className="text-purple-700 underline"
+                            className="text-sm font-semibold text-[#315e4e] underline"
                           >
                             Voir contrat complémentaire
                           </a>
@@ -336,7 +335,7 @@ export default function BookingsPage() {
                             dateFin: booking.dateFin,
                           });
                         }}
-                        className="text-purple-700 underline text-sm mt-2"
+                        className="mt-4 text-sm font-semibold text-[#315e4e] underline"
                       >
                         Modifier les dates
                       </button>

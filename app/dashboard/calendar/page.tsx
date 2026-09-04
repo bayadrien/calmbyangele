@@ -234,9 +234,10 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-8">
+      <header className="page-intro"><div><p className="eyebrow">Le calendrier</p><h1>Visualisez les jours qui viennent.</h1><p>Un planning clair pour préparer chaque arrivée et préserver vos temps de repos.</p></div></header>
 
       {/* STATS */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <StatCard
           title="Aujourd’hui"
           value={`${stats.todayAnimals} animaux`}
@@ -262,7 +263,7 @@ export default function CalendarPage() {
       {/* BOUTON INDISPO */}
       <button
         onClick={addUnavailability}
-        className="bg-red-500 text-white px-4 py-2 rounded-xl"
+        className="rounded-xl border border-[#edc8bd] bg-[#fff4ef] px-4 py-3 text-sm font-bold text-[#a95537] transition hover:bg-[#fde8dc]"
       >
         Ajouter indisponibilité
       </button>
@@ -271,7 +272,7 @@ export default function CalendarPage() {
       {unavailabilities.length > 0 && (
         <div className="bg-red-50 p-4 rounded-xl">
           <h3 className="font-semibold mb-3">
-            Indisponibilités enregistrées
+            Vos indisponibilités
           </h3>
           {unavailabilities.map((u) => (
             <div
@@ -293,7 +294,7 @@ export default function CalendarPage() {
       )}
 
       {/* CALENDRIER */}
-      <div className="bg-white p-6 rounded-2xl shadow">
+      <div className="calm-panel p-4 sm:p-7">
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
@@ -317,9 +318,8 @@ function StatCard({
   value: any;
 }) {
   return (
-    <div className="bg-purple-100 p-4 rounded-xl">
-      <p className="text-sm text-gray-700">{title}</p>
-      <p className="text-xl font-bold text-black">{value}</p>
+    <div className="metric-card">
+      <p>{title}</p><p>{value}</p>
     </div>
   );
 }

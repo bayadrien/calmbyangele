@@ -4,87 +4,30 @@ import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 
+const fields = [
+  ["prenom", "Prénom", "text"], ["nom", "Nom", "text"], ["email", "Adresse e-mail", "email"],
+  ["telephone", "Téléphone", "tel"], ["adresse", "Adresse", "text"], ["contactUrgence", "Contact d’urgence", "text"],
+] as const;
+
 export default function OwnersPage() {
   const [owners, setOwners] = useState<any[]>([]);
-  const [form, setForm] = useState({
-    prenom: "",
-    nom: "",
-    email: "",
-    telephone: "",
-    adresse: "",
-    contactUrgence: "",
-    notes: "",
-  });
+  const [form, setForm] = useState({ prenom: "", nom: "", email: "", telephone: "", adresse: "", contactUrgence: "", notes: "" });
+  const fetchOwners = async () => setOwners((await getDocs(collection(db, "owners"))).docs.map((owner) => ({ id: owner.id, ...owner.data() })));
+  useEffect(() => { fetchOwners(); }, []);
+  const handleSubmit = async (event: React.FormEvent) => { event.preventDefault(); await addDoc(collection(db, "owners"), form); setForm({ prenom: "", nom: "", email: "", telephone: "", adresse: "", contactUrgence: "", notes: "" }); fetchOwners(); };
 
-  const fetchOwners = async () => {
-    const querySnapshot = await getDocs(collection(db, "owners"));
-    const data = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setOwners(data);
-  };
-
-  useEffect(() => {
-    fetchOwners();
-  }, []);
-
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    await addDoc(collection(db, "owners"), form);
-    setForm({
-      prenom: "",
-      nom: "",
-      email: "",
-      telephone: "",
-      adresse: "",
-      contactUrgence: "",
-      notes: "",
-    });
-    fetchOwners();
-  };
-
-  return (
-    <div className="min-h-screen bg-purple-100 p-8">
-      <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-8">
-        <h1 className="text-2xl font-bold text-purple-700 mb-6">
-          Gestion des Maîtres
-        </h1>
-
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 mb-8">
-          {Object.keys(form).map((key) => (
-            <input
-              key={key}
-              placeholder={key}
-              value={(form as any)[key]}
-              onChange={(e) =>
-                setForm({ ...form, [key]: e.target.value })
-              }
-              className="border border-purple-200 p-2 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
-            />
-          ))}
-          <button
-            type="submit"
-            className="col-span-2 bg-purple-500 text-white p-3 rounded-xl"
-          >
-            Ajouter
-          </button>
-        </form>
-
-        <div>
-          {owners.map((owner) => (
-            <div
-              key={owner.id}
-              className="bg-purple-50 p-4 rounded-xl mb-3 shadow"
-            >
-              <p className="font-semibold">
-                {owner.prenom} {owner.nom}
-              </p>
-              <p className="text-sm text-gray-600">{owner.email}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  return <div className="space-y-8">
+    <header className="page-intro"><div><p className="eyebrow">Les familles</p><h1>Les humains derrière chaque truffe.</h1><p>Centralisez les coordonnées, préférences et informations utiles de vos clients.</p></div><span className="page-count">{owners.length} famille{owners.length > 1 ? "s" : ""}</span></header>
+    <section className="calm-panel"><div className="section-heading"><div><p className="eyebrow">Nouveau dossier</p><h2>Ajouter une famille</h2></div><p>Les champs essentiels pour bien démarrer.</p></div>
+      <form onSubmit={handleSubmit} className="calm-form-grid">
+        {fields.map(([key, label, type]) => <label key={key}><span>{label}</span><input type={type} required={key === "prenom" || key === "nom"} value={form[key]} onChange={(event) => setForm({ ...form, [key]: event.target.value })} /></label>)}
+        <label className="md:col-span-2"><span>Notes privées</span><textarea rows={3} placeholder="Habitudes, informations importantes, préférences…" value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} /></label>
+        <button type="submit" className="calm-primary md:col-span-2">Créer la fiche famille <span>→</span></button>
+      </form>
+    </section>
+    <section><div className="section-heading"><div><p className="eyebrow">Répertoire</p><h2>Vos familles</h2></div></div><div className="grid gap-3 md:grid-cols-2">
+      {owners.map((owner) => <article key={owner.id} className="directory-card"><span className="avatar">{owner.prenom?.[0] || "?"}{owner.nom?.[0] || ""}</span><div className="min-w-0"><h3>{owner.prenom} {owner.nom}</h3><p>{owner.email || "Adresse e-mail non renseignée"}</p>{owner.telephone && <small>{owner.telephone}</small>}</div><span className="card-arrow">→</span></article>)}
+      {!owners.length && <div className="empty-state md:col-span-2">Aucune famille enregistrée. Créez votre première fiche ci-dessus.</div>}
+    </div></section>
+  </div>;
 }

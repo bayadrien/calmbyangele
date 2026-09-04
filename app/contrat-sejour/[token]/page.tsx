@@ -80,23 +80,17 @@ export default function ContratSejourPage() {
     fetchData();
   }, [token]);
 
-  if (loading) return <div className="p-10">Chargement...</div>;
+  if (loading) return <main className="public-calm grid min-h-screen place-items-center"><div className="loading-mark">♧</div></main>;
 
   if (!contract) {
     return (
-      <div className="p-10 text-red-600 font-semibold">
-        Avenant introuvable.
-      </div>
+      <main className="public-calm grid min-h-screen place-items-center p-6 text-center text-[#a95537] font-semibold">Ce lien de séjour n’est plus disponible.</main>
     );
   }
 
   if (signed || contract.statut === "signé") {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <h1 className="text-2xl font-bold text-green-600">
-          ✅ Séjour signé avec succès
-        </h1>
-      </div>
+      <div className="public-calm min-h-screen flex items-center justify-center p-6"><div className="access-card text-center"><h1 className="text-2xl font-bold text-green-600">Séjour confirmé, merci !</h1></div></div>
     );
   }
 
@@ -373,22 +367,22 @@ export default function ContratSejourPage() {
   // 🎨 UI (INCHANGÉE)
   // ==========================
   return (
-    <div className="min-h-screen bg-purple-50 py-12 px-6 flex justify-center">
-      <div className="bg-white shadow-2xl rounded-3xl p-12 max-w-4xl w-full space-y-10">
+    <div className="public-calm min-h-screen py-10 px-4 sm:px-6 flex justify-center">
+      <div className="bg-white shadow-2xl rounded-[2rem] p-6 sm:p-12 max-w-4xl w-full space-y-10">
 
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold text-purple-900">
-            Comme à la maison by Angèle
+            CALM by Angèle
           </h1>
           <p className="text-xl font-semibold text-purple-700">
-            Avenant de séjour
+            Les détails de votre séjour
           </p>
         </div>
 
         {/* 1️⃣ INFORMATIONS */}
                 <section className="space-y-4">
                     <h2 className="text-xl font-semibold text-purple-800 border-b pb-2">
-                    1️⃣ Informations
+                    1. Votre séjour
                     </h2>
 
                     <div className="bg-purple-50 p-6 rounded-2xl space-y-2">
