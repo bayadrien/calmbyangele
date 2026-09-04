@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f3ff; /* lavande clair */
-  --foreground: #1f2937; /* gris foncé doux */
+  --background: #f7f5ef;
+  --foreground: #20342d;
+  --ink: #1d3029;
+  --muted: #68786f;
+  --line: #e4e5dc;
+  --brand: #396957;
+  --brand-dark: #254c3e;
+  --brand-soft: #e2eee6;
+  --peach: #f4c8ac;
+  --card: rgba(255, 255, 252, .88);
 }
 
 @theme inline {
@@ -12,11 +20,33 @@
   --font-mono: "Courier New", monospace;
 }
 
-/* ❌ On enlève le dark mode auto */
-
+* { box-sizing: border-box; }
+html { background: var(--background); }
 body {
-  background: var(--background);
+  min-height: 100vh;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
-  min-height: 100vh;
+  background: radial-gradient(circle at 92% -10%, rgba(244, 200, 172, .48), transparent 28rem), radial-gradient(circle at -8% 42%, rgba(208, 226, 215, .58), transparent 33rem), var(--background);
 }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+input, select, textarea { transition: border-color .18s ease, box-shadow .18s ease; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: #6f9b85 !important; box-shadow: 0 0 0 4px rgba(89, 142, 113, .14) !important; }
+
+/* A calm, cohesive visual system for the existing management screens. */
+.bg-purple-50, .bg-purple-100, .bg-purple-200 { background-color: var(--brand-soft) !important; }
+.bg-purple-500, .bg-purple-600 { background-color: var(--brand) !important; }
+.bg-purple-700, .bg-purple-800, .bg-purple-900 { background-color: var(--brand-dark) !important; }
+.hover\:bg-purple-700:hover, .hover\:bg-purple-800:hover, .hover\:bg-purple-600:hover { background-color: #244b3d !important; }
+.text-purple-600, .text-purple-700, .text-purple-800, .text-purple-900 { color: var(--brand-dark) !important; }
+.border-purple-100, .border-purple-200, .border-purple-300, .border-purple-400 { border-color: #bfd4c6 !important; }
+.focus\:ring-purple-300:focus, .focus\:ring-purple-400:focus { --tw-ring-color: rgba(89, 142, 113, .25) !important; }
+.bg-white { background-color: var(--card) !important; border-color: var(--line); }
+.shadow, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl { box-shadow: 0 18px 46px rgba(42, 62, 51, .09) !important; }
+
+.fc { --fc-border-color: #e3e6dc; --fc-page-bg-color: transparent; --fc-neutral-bg-color: #f3f6ef; }
+.fc .fc-toolbar-title { color: var(--ink); font-size: 1.1rem; font-weight: 700; }
+.fc .fc-button-primary { background: var(--brand); border-color: var(--brand); box-shadow: none; }
+.fc .fc-button-primary:hover, .fc .fc-button-primary:not(:disabled).fc-button-active { background: var(--brand-dark); border-color: var(--brand-dark); }
+.fc .fc-col-header-cell-cushion { color: var(--muted); font-size: .76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: .75rem .25rem; }
+.fc .fc-daygrid-day-number { color: var(--ink); padding: .5rem; }

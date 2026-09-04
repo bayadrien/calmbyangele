@@ -66,33 +66,25 @@ export default function Dashboard() {
 
 
   return (
-    <div className="space-y-10">
-
-      {/* HERO */}
-      <div className="bg-gradient-to-r from-purple-200 to-purple-100 p-8 rounded-3xl shadow-md">
-        <h1 className="text-3xl font-bold text-purple-900 mb-2">
-          Bienvenue sur Comme A La Maison by Angèle 💜
-        </h1>
-        <p className="text-purple-800">
-          Centre de gestion des gardes & animaux
-        </p>
-      </div>
+    <div className="space-y-9">
+      <section className="relative overflow-hidden rounded-[2rem] bg-[#315e4e] px-7 py-9 text-white shadow-xl shadow-[#315e4e]/15 sm:px-10 sm:py-11">
+        <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full border-[30px] border-white/10" /><div className="absolute -bottom-24 right-32 h-44 w-44 rounded-full bg-[#f0b895] opacity-90" />
+        <div className="relative max-w-xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#c7ded0]">Le carnet de la maison</p><h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Bonjour, Angèle.</h1><p className="mt-3 max-w-md text-sm leading-6 text-white/75">Tout ce qu’il faut pour suivre les compagnons confiés à votre attention, d’un seul regard.</p></div>
+      </section>
 
       {/* STATS RAPIDES */}
-      <div className="grid grid-cols-4 gap-6">
-        <StatCard title="Animaux actifs" value={animalsCount.toString()} />
-        <StatCard title="Gardes à venir" value={bookings.filter(b => new Date(b.dateDebut) > new Date()).length.toString()} />
-        <StatCard title="Aujourd’hui" value={todayCount.toString()} />
-        <StatCard title="Ce mois" value={`${revenueMonth} €`} />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">
+        <StatCard title="Animaux actifs" value={animalsCount.toString()} icon="◌" />
+        <StatCard title="Séjours à venir" value={bookings.filter(b => new Date(b.dateDebut) > new Date()).length.toString()} icon="□" />
+        <StatCard title="À la maison" value={todayCount.toString()} icon="♥" />
+        <StatCard title="Ce mois" value={`${revenueMonth} €`} icon="↗" />
       </div>
 
       {/* RACCOURCIS */}
       <div>
-        <h2 className="text-xl font-semibold text-purple-900 mb-4">
-          Accès rapide
-        </h2>
+        <div className="mb-4 flex items-end justify-between"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-[#77867d]">Organisation</p><h2 className="mt-1 text-2xl font-bold tracking-tight text-[#1d3029]">Accès rapide</h2></div><p className="hidden text-sm text-[#718078] sm:block">Les essentiels de la journée</p></div>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
           <QuickCard
             href="/dashboard/dogs"
             title="🐾 Animaux"
@@ -123,18 +115,13 @@ export default function Dashboard() {
       </div>
 
       {/* ACTIVITÉ RÉCENTE */}
-      <div className="bg-white p-6 rounded-2xl shadow">
-        <h2 className="text-xl font-semibold mb-4 text-purple-900">
-          Activité récente
-        </h2>
-        <div className="bg-white/80 p-6 rounded-2xl shadow border border-purple-100">
-          {bookings.slice(-5).reverse().map((b, index) => (
-            <p key={index} className="text-gray-700 mb-2">
-              🐾 Séjour du {b.dateDebut} au {b.dateFin}
-            </p>
-          ))}
+      <section className="rounded-[1.6rem] border border-[#e0e5dc] bg-white/75 p-6 shadow-sm sm:p-7">
+        <h2 className="text-xl font-bold tracking-tight text-[#1d3029]">Derniers séjours</h2><p className="mt-1 text-sm text-[#728078]">L’activité la plus récente de la maison.</p>
+        <div className="mt-5 divide-y divide-[#e7ebe3]">
+          {bookings.slice(-5).reverse().map((b, index) => (<p key={index} className="py-3 text-sm text-[#42564c]"><span className="mr-3 inline-grid h-7 w-7 place-items-center rounded-full bg-[#e2eee6] text-[#315e4e]">◌</span>Séjour du <strong>{b.dateDebut}</strong> au <strong>{b.dateFin}</strong></p>))}
+          {!bookings.length && <p className="py-5 text-sm text-[#718078]">Aucun séjour enregistré pour le moment.</p>}
         </div>
-      </div>
+      </section>
 
     </div>
   );
@@ -146,17 +133,15 @@ export default function Dashboard() {
 
 function StatCard({
   title,
-  value,
+  value, icon,
 }: {
   title: string;
   value: string;
+  icon: string;
 }) {
   return (
-    <div className="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
-      <p className="text-sm text-gray-600">{title}</p>
-      <p className="text-2xl font-bold text-purple-800 mt-2">
-        {value}
-      </p>
+    <div className="rounded-[1.35rem] border border-[#e1e6dd] bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-5">
+      <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#e2eee6] text-sm text-[#315e4e]">{icon}</span><p className="mt-4 text-xs font-semibold text-[#75837b]">{title}</p><p className="mt-1 text-2xl font-bold tracking-tight text-[#1d3029]">{value}</p>
     </div>
   );
 }
@@ -173,12 +158,12 @@ function QuickCard({
   return (
     <Link
       href={href}
-      className="bg-purple-50 p-6 rounded-2xl shadow hover:shadow-lg hover:bg-purple-100 transition block"
+      className="group block rounded-[1.35rem] border border-[#e1e6dd] bg-white/75 p-5 shadow-sm transition hover:-translate-y-1 hover:border-[#bfd4c6] hover:shadow-lg"
     >
-      <h3 className="text-lg font-semibold text-purple-800 mb-2">
+      <h3 className="text-lg font-bold tracking-tight text-[#254c3e] mb-2 group-hover:text-[#396957]">
         {title}
       </h3>
-      <p className="text-gray-600 text-sm">{desc}</p>
+      <p className="text-[#718078] text-sm">{desc}</p><span className="mt-5 inline-block text-sm font-bold text-[#396957] transition group-hover:translate-x-1">Ouvrir →</span>
     </Link>
   );
 }

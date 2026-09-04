@@ -82,32 +82,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-purple-200">
-      <div className="bg-white p-10 rounded-3xl shadow-2xl text-center border border-purple-200 w-96">
-        
-        {/* Titre cliquable secret */}
-        <h1
-          onClick={handleSecretClick}
-          className="text-3xl font-bold mb-6 text-purple-900 cursor-default"
-        >
-          CALM by Angèle 💜
-        </h1>
-
-        <button
-          onClick={handleLogin}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-2xl shadow-lg transition transform hover:scale-105 w-full"
-        >
-          Connexion avec Google
-        </button>
-
-        {showAdmin && (
-          <div className="mt-6 space-y-4 text-left">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-10">
+      <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-[#dbece1] blur-3xl" />
+      <div className="absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-[#f7d5bd] blur-3xl" />
+      <section className="relative grid w-full max-w-5xl overflow-hidden rounded-[2.25rem] border border-white/80 bg-[#fffefa]/85 shadow-[0_28px_80px_rgba(37,76,62,.16)] backdrop-blur sm:grid-cols-[1.05fr_.95fr]">
+        <div className="relative hidden min-h-[580px] overflow-hidden bg-[#315e4e] p-12 text-white sm:block">
+          <div className="absolute -right-20 -top-14 h-72 w-72 rounded-full border-[28px] border-white/10" />
+          <div className="absolute bottom-[-80px] left-[-70px] h-64 w-64 rounded-full bg-[#f0b895]/90" />
+          <div className="relative flex h-full flex-col justify-between">
+            <div><span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[.18em]">Espace privé</span><h2 className="mt-8 max-w-xs text-4xl font-semibold leading-tight">Prendre soin, en toute sérénité.</h2><p className="mt-5 max-w-sm text-sm leading-6 text-white/75">Le carnet de bord élégant de vos compagnons accueillis chez Angèle.</p></div>
+            <p className="max-w-[16rem] text-sm italic text-white/80">« Chaque séjour mérite son attention particulière. »</p>
+          </div>
+        </div>
+        <div className="flex min-h-[580px] items-center p-7 sm:p-12">
+          <div className="w-full">
+            <div className="mb-10 flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#e2eee6] text-xl text-[#315e4e]">♧</span><div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#79867f]">Conciergerie canine</p><h1 onClick={handleSecretClick} className="cursor-default text-xl font-bold tracking-tight text-[#1d3029]">CALM <em className="font-normal">by Angèle</em></h1></div></div>
+            <h2 className="text-3xl font-bold tracking-tight text-[#1d3029]">Bienvenue</h2>
+            <p className="mt-3 text-sm leading-6 text-[#718078]">Connectez-vous pour retrouver les familles, les séjours et les souvenirs de la maison.</p>
+            <button onClick={handleLogin} className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl bg-[#315e4e] px-6 py-4 text-sm font-bold text-white shadow-lg shadow-[#315e4e]/20 transition hover:-translate-y-0.5 hover:bg-[#254c3e]"><span className="grid h-5 w-5 place-items-center rounded-full bg-white text-[11px] font-bold text-[#315e4e]">G</span> Continuer avec Google</button>
+            <p className="mt-4 text-center text-xs text-[#87928c]">Accès réservé à l’équipe CALM.</p>
+            {showAdmin && (
+              <div className="mt-7 space-y-4 border-t border-[#e5e7df] pt-6 text-left">
+                <p className="text-xs font-bold uppercase tracking-[.14em] text-[#718078]">Connexion administrateur</p>
             <input
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border rounded-xl"
+              className="w-full border border-[#ccd8cf] bg-white p-3.5 rounded-xl"
             />
 
             <input
@@ -115,18 +117,20 @@ export default function LoginPage() {
               placeholder="Mot de passe"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 border rounded-xl"
+              className="w-full border border-[#ccd8cf] bg-white p-3.5 rounded-xl"
             />
 
             <button
               onClick={handleEmailLogin}
-              className="w-full bg-purple-900 text-white py-3 rounded-xl hover:bg-purple-800 transition"
+              className="w-full rounded-xl bg-[#1d3029] py-3 text-sm font-bold text-white transition hover:bg-[#315e4e]"
             >
               Connexion
             </button>
           </div>
-        )}
-      </div>
-    </div>
+            )}
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
