@@ -10,6 +10,7 @@ export default function Dashboard() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [revenueMonth, setRevenueMonth] = useState(0);
   const [todayCount, setTodayCount] = useState(0);
+  const [tasks, setTasks] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,6 +60,17 @@ export default function Dashboard() {
 
       setRevenueMonth(totalMonth);
       setTodayCount(todayBookings);
+
+      const [contractsSnap, stayContractsSnap] = await Promise.all([
+        getDocs(collection(db, "contracts")),
+        getDocs(collection(db, "stayContracts")),
+      ]);
+      const nextTasks = [
+        ...contractsSnap.docs.filter((item) => item.data().statut === "en_attente").map(() => "Un contrat initial attend une signature."),
+        ...stayContractsSnap.docs.filter((item) => item.data().statut === "en_attente").map(() => "Un avenant de séjour attend une signature."),
+        ...bookingsData.filter((item: any) => new Date(item.dateDebut) > today && new Date(item.dateDebut).getTime() - today.getTime() < 1000 * 60 * 60 * 24 * 3).map((item: any) => `Préparer l’arrivée du ${item.dateDebut}.`),
+      ];
+      setTasks(nextTasks.slice(0, 5));
     };
 
     fetchData();
@@ -79,6 +91,8 @@ export default function Dashboard() {
         <StatCard title="À la maison" value={todayCount.toString()} icon="♥" />
         <StatCard title="Ce mois" value={`${revenueMonth} €`} icon="↗" />
       </div>
+
+      <section className="today-board"><div><p className="eyebrow">À ne pas oublier</p><h2>Le fil de votre journée</h2></div><div className="today-list">{tasks.length ? tasks.map((task, index) => <p key={`${task}-${index}`}><span>{index + 1}</span>{task}</p>) : <p><span>✓</span>Tout est prêt pour aujourd’hui.</p>}</div></section>
 
       {/* RACCOURCIS */}
       <div>
