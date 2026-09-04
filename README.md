@@ -1,4 +1,22 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CALM by Angèle
+
+Tableau de gestion des animaux, séjours, contrats et galeries privées de Comme à la Maison by Angèle.
+
+## Démarrage sécurisé
+
+1. Copiez `.env.example` vers `.env.local` et renseignez les valeurs nécessaires. Ne partagez jamais ce fichier.
+2. Dans Firebase Auth, attribuez la revendication personnalisée `admin: true` aux comptes de l’équipe. Les règles Firestore fournies refusent tout autre accès aux données clients.
+3. Déployez les règles avec `firebase deploy --only firestore:rules` depuis ce dossier.
+4. Configurez `GALLERY_SESSION_SECRET` avec une valeur aléatoire longue et unique en production.
+
+Les galeries publiques utilisent désormais un code validé côté serveur, puis une session HTTP-only de 12 heures. Les anciens codes sont migrés automatiquement vers un hash à leur première utilisation.
+
+## Vérifications
+
+```bash
+npm run lint
+npm run build
+```
 
 ## Getting Started
 

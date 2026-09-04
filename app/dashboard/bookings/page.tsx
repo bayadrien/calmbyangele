@@ -72,6 +72,21 @@ export default function BookingsPage() {
       return;
     }
 
+    if (new Date(form.dateFin) <= new Date(form.dateDebut)) {
+      alert("La date de fin doit être après la date de début.");
+      return;
+    }
+
+    const overlapsExistingStay = bookings.some((booking) =>
+      booking.dogId === form.dogId &&
+      new Date(form.dateDebut) < new Date(booking.dateFin) &&
+      new Date(form.dateFin) > new Date(booking.dateDebut),
+    );
+    if (overlapsExistingStay) {
+      alert("Cet animal a déjà un séjour qui chevauche ces dates.");
+      return;
+    }
+
     const nights = calculateNights(form.dateDebut, form.dateFin);
 
     const bookingRef = await addDoc(collection(db, "bookings"), {

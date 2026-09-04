@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { requireAdmin } from "@/lib/server-auth";
 
 export async function POST(req: Request) {
   try {
+    await requireAdmin(req);
     const {
       dogName,
       ownerName,
@@ -141,6 +143,9 @@ await transporter.sendMail({
     return NextResponse.json({ success: true });
 
   } catch (error) {
+    if (error instanceof Error && (error.message === "UNAUTHORIZED" || error.message === "FORBIDDEN")) {
+      return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
+    }
     console.error("GALLERY MAIL ERROR:", error);
     return NextResponse.json({ error: "Erreur envoi" }, { status: 500 });
   }

@@ -329,6 +329,7 @@ export default function ContratSejourPage() {
           formData.changements === "oui"
             ? formData.detailChangements
             : "",
+        token,
       }),
     });
 
@@ -347,6 +348,7 @@ export default function ContratSejourPage() {
       dateDebut: contract.dateDebut,
       dateFin: contract.dateFin,
       prix: contract.prix,
+      token,
     }),
   });
 
@@ -361,6 +363,7 @@ export default function ContratSejourPage() {
       dateDebut: contract.dateDebut,
       dateFin: contract.dateFin,
       prix: contract.prix,
+      token,
     }),
   });
     setSigned(true);

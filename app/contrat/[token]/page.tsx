@@ -172,7 +172,7 @@ export default function ContratPage() {
     const response = await fetch("/api/upload-signature", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: signatureData }),
+      body: JSON.stringify({ image: signatureData, token }),
     });
 
     if (!response.ok) {
@@ -457,6 +457,7 @@ export default function ContratPage() {
         contractNumber,
         pdfUrl,
         formData,
+        token,
       }),
     });
 
@@ -466,6 +467,7 @@ export default function ContratPage() {
       body: JSON.stringify({
         dogName: dog.nom,
         ownerName: owner.prenom + " " + owner.nom,
+        token,
       }),
     });
 
@@ -476,6 +478,7 @@ export default function ContratPage() {
         dogName: dog.nom,
         ownerName: owner.prenom + " " + owner.nom,
         ownerEmail: owner.email,
+        token,
       }),
     });
 

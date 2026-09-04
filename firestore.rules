@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    // All operational records contain personal data and are only accessible
+    // to users explicitly marked as administrators in Firebase Auth.
+    match /owners/{document=**} { allow read, write: if isAdmin(); }
+    match /dogs/{document=**} { allow read, write: if isAdmin(); }
+    match /bookings/{document=**} { allow read, write: if isAdmin(); }
+    match /contracts/{document=**} { allow read, write: if isAdmin(); }
+    match /stayContracts/{document=**} { allow read, write: if isAdmin(); }
+    match /photos/{document=**} { allow read, write: if isAdmin(); }
+    match /documents/{document=**} { allow read, write: if isAdmin(); }
+    match /unavailabilities/{document=**} { allow read, write: if isAdmin(); }
+  }
+}

@@ -1,39 +1,23 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
+import { v2 as cloudinary } from "cloudinary";
+import { adminDb } from "@/lib/firebase-admin";
 
-export async function POST(req: Request) {
+cloudinary.config({ cloud_name: process.env.CLOUDINARY_CLOUD_NAME, api_key: process.env.CLOUDINARY_API_KEY, api_secret: process.env.CLOUDINARY_API_SECRET });
+
+export async function POST(request: Request) {
   try {
-    const { image } = await req.json()
-
-    if (!image) {
-      return NextResponse.json({ error: "Image manquante" }, { status: 400 })
+    const { image, token } = await request.json();
+    if (typeof image !== "string" || typeof token !== "string" || image.length > 2_000_000) {
+      return NextResponse.json({ error: "Données de signature invalides" }, { status: 400 });
     }
-
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
-    const uploadPreset = "calm_unsigned"
-
-    const formData = new FormData()
-    formData.append("file", image)
-    formData.append("upload_preset", uploadPreset)
-
-    const uploadRes = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    )
-
-    const upload = await uploadRes.json()
-    console.log("CLOUDINARY RESPONSE:", upload)
-
-    if (!upload.secure_url) {
-      return NextResponse.json({ error: upload }, { status: 500 })
+    const contract = await adminDb.collection("contracts").where("token", "==", token).limit(1).get();
+    if (contract.empty || contract.docs[0].data().statut === "signé") {
+      return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
     }
-
-    return NextResponse.json({ url: upload.secure_url })
-
+    const result = await cloudinary.uploader.upload(image, { folder: "calm/signatures", resource_type: "image" });
+    return NextResponse.json({ url: result.secure_url });
   } catch (error) {
-    console.error("UPLOAD SIGNATURE ERROR:", error)
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
+    console.error("UPLOAD SIGNATURE ERROR", error);
+    return NextResponse.json({ error: "Impossible d’enregistrer la signature" }, { status: 500 });
   }
 }

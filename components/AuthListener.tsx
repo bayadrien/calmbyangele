@@ -10,7 +10,7 @@ export default function AuthListener() {
   const pathname = usePathname()
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
 
       // 🔓 Pages publiques autorisées
       if (
@@ -22,8 +22,9 @@ export default function AuthListener() {
       }
 
       // 🔐 Protéger uniquement dashboard
-      if (pathname.startsWith("/dashboard") && !user) {
-        router.push("/login")
+      if (pathname.startsWith("/dashboard")) {
+        const token = user ? await user.getIdTokenResult() : null;
+        if (token?.claims.admin !== true) router.push("/login");
       }
 
     })

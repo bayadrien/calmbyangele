@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { hasContractAccess } from "@/lib/contract-access";
 
 export async function POST(req: Request) {
   try {
@@ -10,7 +11,11 @@ export async function POST(req: Request) {
       dateDebut,
       dateFin,
       prix,
+      token,
     } = await req.json();
+    if (!(await hasContractAccess(token, "stayContracts"))) {
+      return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
+    }
 
     if (
       !dogName ||

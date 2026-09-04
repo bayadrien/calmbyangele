@@ -7,28 +7,24 @@ import {
   signInWithRedirect,
   signOut,
   signInWithEmailAndPassword,
+  type User,
 } from "firebase/auth";
 import { auth, provider } from "@/lib/firebase";
 
 export default function LoginPage() {
   const router = useRouter();
 
-  const adminEmail = [
-    "aux.pattounes59@gmail.com",
-    "bayadrien@gmail.com",
-    "bayadrien@hotmail.fr"
-  ];
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showAdmin, setShowAdmin] = useState(false);
   const [clickCount, setClickCount] = useState(0);
 
-  const checkUser = async (user: any) => {
-    if (user?.email && adminEmail.includes(user.email)) {
+  const checkUser = async (user: User) => {
+    const token = await user.getIdTokenResult();
+    if (token.claims.admin === true) {
       router.push("/dashboard");
     } else {
-      alert("Accès refusé.");
+      alert("Ce compte n’a pas les droits administrateur.");
       await signOut(auth);
     }
   };

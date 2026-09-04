@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { transporter } from "@/lib/mailer";
+import { hasContractAccess } from "@/lib/contract-access";
 
 export async function POST(req: Request) {
   try {
@@ -10,8 +10,12 @@ export async function POST(req: Request) {
       ownerName,
       dateDebut,
       dateFin,
-      prix
+      prix,
+      token,
     } = await req.json();
+    if (!(await hasContractAccess(token, "stayContracts"))) {
+      return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
+    }
     const isInitial = type === "initial";
 
 

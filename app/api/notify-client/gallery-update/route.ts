@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { adminDb } from "@/lib/firebase-admin";
+import { requireAdmin } from "@/lib/server-auth";
 
 export async function POST(req: Request) {
   try {
+    await requireAdmin(req);
     const {
       dogId,
       dogName,
@@ -176,6 +178,9 @@ console.log("Firestore updated successfully");
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error instanceof Error && (error.message === "UNAUTHORIZED" || error.message === "FORBIDDEN")) {
+      return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
+    }
     console.error("Erreur email nouvelle photo :", error);
     return NextResponse.json(
       { error: "Erreur envoi email" },

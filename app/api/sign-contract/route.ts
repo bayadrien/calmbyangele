@@ -5,19 +5,26 @@ export async function POST(req: Request) {
   try {
     const {
       contractId,
-      ownerId,
-      dogId,
       signatureUrl,
       contractNumber,
       pdfUrl,
       formData,
+      token,
     } = await req.json();
 
-    if (!contractId) {
+    if (!contractId || !token) {
       return NextResponse.json({ error: "ID manquant" }, { status: 400 });
     }
 
-    await adminDb.collection("contracts").doc(contractId).update({
+    const contract = await adminDb.collection("contracts").doc(contractId).get();
+    if (!contract.exists || contract.data()?.token !== token) {
+      return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
+    }
+    if (contract.data()?.statut === "signé") {
+      return NextResponse.json({ error: "Contrat déjà signé" }, { status: 409 });
+    }
+
+    await contract.ref.update({
       statut: "signé",
       signatureUrl,
       contractNumber,
@@ -27,8 +34,9 @@ export async function POST(req: Request) {
     });
 
     // Optionnel : marquer le propriétaire comme validé
-    if (ownerId) {
-      await adminDb.collection("owners").doc(ownerId).update({
+    const ownerIdFromContract = contract.data()?.ownerId;
+    if (ownerIdFromContract) {
+      await adminDb.collection("owners").doc(ownerIdFromContract).update({
         contratGeneralValide: true,
       });
     }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import {
   doc,
   getDoc,
@@ -212,7 +212,7 @@ console.log("shouldSend:", shouldSend);
       if (shouldSend) {
         await fetch("/api/send-gallery-access", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` },
           body: JSON.stringify({
             dogName: animal.nom,
             ownerName: owner.prenom + " " + owner.nom,
@@ -260,7 +260,7 @@ fetchDocuments();
 
   const res = await fetch("/api/send-gallery-access", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` },
     body: JSON.stringify({
       dogName: animal.nom,
       ownerName: owner.prenom + " " + owner.nom,

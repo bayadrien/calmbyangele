@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { collection, addDoc, getDocs, doc, getDoc } from "firebase/firestore";
+import { formatDate } from "@/lib/formatDate";
 
 export default function PhotosPage() {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -11,22 +12,48 @@ export default function PhotosPage() {
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [photoCount, setPhotoCount] = useState(0);
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
   const uploadPreset = "calm_unsigned";
 
   const fetchBookings = async () => {
     const snapshot = await getDocs(collection(db, "bookings"));
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+
+    const data = await Promise.all(
+      snapshot.docs.map(async (bookingDoc) => {
+        const booking = { id: bookingDoc.id, ...(bookingDoc.data() as any) };
+        const dogSnap = await getDoc(doc(db, "dogs", booking.dogId));
+
+        return {
+          ...booking,
+          dogName: dogSnap.exists() ? dogSnap.data().nom : "Chien inconnu",
+        };
+      })
+    );
+
     setBookings(data);
   };
 
   useEffect(() => {
     fetchBookings();
   }, []);
+
+  useEffect(() => {
+    const fetchPhotoCount = async () => {
+      if (!selectedBooking) return;
+
+      const snapshot = await getDocs(collection(db, "photos"));
+
+      const count = snapshot.docs.filter(
+        (doc) => doc.data().bookingId === selectedBooking
+      ).length;
+
+      setPhotoCount(count);
+    };
+
+    fetchPhotoCount();
+  }, [selectedBooking]);
 
   const handleUpload = async () => {
     if (!selectedBooking) {
@@ -84,7 +111,7 @@ export default function PhotosPage() {
 
             await fetch("/api/notify-client/gallery-update", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` },
               body: JSON.stringify({
                 dogId: bookingData.dogId,
                 dogName: dogData.nom,
@@ -124,15 +151,31 @@ export default function PhotosPage() {
           <option value="">Sélectionner un séjour</option>
           {bookings.map((booking) => (
             <option key={booking.id} value={booking.id}>
-              {booking.dateDebut} → {booking.dateFin}
+              {booking.dogName} • {formatDate(booking.dateDebut)} → {formatDate(booking.dateFin)}
             </option>
           ))}
         </select>
 
-        {/* Bouton fichier stylé */}
-        <div className="mb-4">
-          <label className="inline-block cursor-pointer bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl shadow-md transition">
-            Choisir une photo 📸
+        {selectedBooking && (
+          <p className="text-sm text-purple-700 mb-4">
+            📸 {photoCount} photo{photoCount > 1 ? "s" : ""} déjà dans ce séjour
+          </p>
+        )}
+
+        {/* Zone upload photo */}
+        <div className="mb-6">
+          <label className="flex flex-col items-center justify-center border-2 border-dashed border-purple-400 bg-purple-50 hover:bg-purple-100 transition rounded-2xl p-8 cursor-pointer text-center">
+
+            <div className="text-4xl mb-2">📸</div>
+
+            <p className="text-purple-800 font-semibold">
+              Cliquez pour sélectionner une photo
+            </p>
+
+            <p className="text-sm text-gray-600 mt-1">
+              JPG, PNG ou HEIC
+            </p>
+
             <input
               type="file"
               accept="image/*"
@@ -148,8 +191,8 @@ export default function PhotosPage() {
           </label>
 
           {selectedFile && (
-            <p className="text-sm text-gray-700 mt-2">
-              Fichier : {selectedFile.name}
+            <p className="text-sm text-gray-700 mt-3 text-center">
+              📄 {selectedFile.name}
             </p>
           )}
         </div>
@@ -163,6 +206,18 @@ export default function PhotosPage() {
               className="rounded-2xl shadow-md max-h-72"
             />
           </div>
+        )}
+
+        {selectedFile && (
+          <button
+            onClick={() => {
+              setSelectedFile(null);
+              setPreviewUrl(null);
+            }}
+            className="text-red-500 text-sm mt-2"
+          >
+            Supprimer la photo
+          </button>
         )}
 
         {/* Caption */}
