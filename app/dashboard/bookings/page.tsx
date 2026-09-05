@@ -26,6 +26,7 @@ export default function BookingsPage() {
     typePrestation: "pension",
     heureArrivee: "",
     heureDepart: "",
+    checklist: { carnetSante: false, nourriture: false, traitement: false, harnais: false },
   });
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -138,6 +139,7 @@ export default function BookingsPage() {
       typePrestation: "pension",
       heureArrivee: "",
       heureDepart: "",
+      checklist: { carnetSante: false, nourriture: false, traitement: false, harnais: false },
     });
 
     fetchBookings();
@@ -239,6 +241,8 @@ export default function BookingsPage() {
             className="col-span-2 calm-control min-h-24"
           />
 
+          <fieldset className="col-span-2 stay-checklist"><legend>Préparer l’arrivée</legend><p>À cocher au fil de la préparation.</p><div>{([['carnetSante', 'Carnet de santé'], ['nourriture', 'Nourriture reçue'], ['traitement', 'Traitement noté'], ['harnais', 'Harnais / laisse']] as const).map(([key, label]) => <label key={key}><input type="checkbox" checked={form.checklist[key]} onChange={(event) => setForm({ ...form, checklist: { ...form.checklist, [key]: event.target.checked } })} />{label}</label>)}</div></fieldset>
+
           <button
             type="submit"
             className="calm-primary col-span-2"
@@ -309,6 +313,7 @@ export default function BookingsPage() {
                     </p>
                     <p>{booking.nombreNuits} nuits</p>
                     <p className="mt-1 text-sm text-[#61736a]">{booking.typePrestation || "Pension à la maison"}{booking.heureArrivee && ` · arrivée ${booking.heureArrivee}`}{booking.heureDepart && ` · départ ${booking.heureDepart}`}</p>
+                    {booking.checklist && <p className="mt-3 text-xs font-semibold text-[#52705f]">Préparation : {Object.values(booking.checklist).filter(Boolean).length}/4 éléments prêts</p>}
 
                     <div className="flex justify-between items-center mt-3">
                       {/* Lien contrat si en attente */}
