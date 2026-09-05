@@ -10,7 +10,7 @@ export default function Dashboard() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [revenueMonth, setRevenueMonth] = useState(0);
   const [todayCount, setTodayCount] = useState(0);
-  const [tasks, setTasks] = useState<string[]>([]);
+  const [tasks, setTasks] = useState<{ text: string; href: string }[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,9 +20,10 @@ export default function Dashboard() {
 
       // 🔹 Bookings
       const bookingsSnap = await getDocs(collection(db, "bookings"));
-      const bookingsData = bookingsSnap.docs.map(doc => doc.data());
+      const bookingsData = bookingsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const dogNames = new Map(animalsSnap.docs.map((animal) => [animal.id, animal.data().nom || "un compagnon"]));
 
-      setBookings(bookingsData);
+      setBookings(bookingsData.map((booking: any) => ({ ...booking, dogName: dogNames.get(booking.dogId) || "Un compagnon" })));
 
       const today = new Date();
       const currentMonth = today.getMonth();
@@ -66,9 +67,9 @@ export default function Dashboard() {
         getDocs(collection(db, "stayContracts")),
       ]);
       const nextTasks = [
-        ...contractsSnap.docs.filter((item) => item.data().statut === "en_attente").map(() => "Un contrat initial attend une signature."),
-        ...stayContractsSnap.docs.filter((item) => item.data().statut === "en_attente").map(() => "Un avenant de séjour attend une signature."),
-        ...bookingsData.filter((item: any) => new Date(item.dateDebut) > today && new Date(item.dateDebut).getTime() - today.getTime() < 1000 * 60 * 60 * 24 * 3).map((item: any) => `Préparer l’arrivée du ${item.dateDebut}.`),
+        ...contractsSnap.docs.filter((item) => item.data().statut === "en_attente").map((item) => ({ text: `Le contrat initial de ${dogNames.get(item.data().dogId) || "ce compagnon"} attend une signature.`, href: "/dashboard/dogs" })),
+        ...stayContractsSnap.docs.filter((item) => item.data().statut === "en_attente").map((item) => ({ text: `Un contrat de séjour pour ${dogNames.get(item.data().dogId) || "un compagnon"} attend une signature.`, href: "/dashboard/bookings" })),
+        ...bookingsData.filter((item: any) => new Date(item.dateDebut) > today && new Date(item.dateDebut).getTime() - today.getTime() < 1000 * 60 * 60 * 24 * 3).map((item: any) => ({ text: `Préparer l’arrivée de ${dogNames.get(item.dogId) || "ce compagnon"} le ${item.dateDebut}.`, href: "/dashboard/bookings" })),
       ];
       setTasks(nextTasks.slice(0, 5));
     };
@@ -92,7 +93,7 @@ export default function Dashboard() {
         <StatCard title="Ce mois" value={`${revenueMonth} €`} icon="↗" />
       </div>
 
-      <section className="today-board"><div><p className="eyebrow">À ne pas oublier</p><h2>Le fil de votre journée</h2></div><div className="today-list">{tasks.length ? tasks.map((task, index) => <p key={`${task}-${index}`}><span>{index + 1}</span>{task}</p>) : <p><span>✓</span>Tout est prêt pour aujourd’hui.</p>}</div></section>
+      <section className="today-board"><div><p className="eyebrow">À ne pas oublier</p><h2>Le fil de votre journée</h2></div><div className="today-list">{tasks.length ? tasks.map((task, index) => <Link key={`${task.text}-${index}`} href={task.href}><span>{index + 1}</span>{task.text}<b>→</b></Link>) : <p><span>✓</span>Tout est prêt pour aujourd’hui.</p>}</div></section>
 
       {/* RACCOURCIS */}
       <div>
@@ -132,7 +133,7 @@ export default function Dashboard() {
       <section className="rounded-[1.6rem] border border-[#e0e5dc] bg-white/75 p-6 shadow-sm sm:p-7">
         <h2 className="text-xl font-bold tracking-tight text-[#1d3029]">Derniers séjours</h2><p className="mt-1 text-sm text-[#728078]">L’activité la plus récente de la maison.</p>
         <div className="mt-5 divide-y divide-[#e7ebe3]">
-          {bookings.slice(-5).reverse().map((b, index) => (<p key={index} className="py-3 text-sm text-[#42564c]"><span className="mr-3 inline-grid h-7 w-7 place-items-center rounded-full bg-[#e2eee6] text-[#315e4e]">◌</span>Séjour du <strong>{b.dateDebut}</strong> au <strong>{b.dateFin}</strong></p>))}
+          {bookings.slice(-5).reverse().map((b, index) => (<p key={index} className="py-3 text-sm text-[#42564c]"><span className="mr-3 inline-grid h-7 w-7 place-items-center rounded-full bg-[#e2eee6] text-[#315e4e]">◌</span><strong>{b.dogName}</strong> · du <strong>{b.dateDebut}</strong> au <strong>{b.dateFin}</strong></p>))}
           {!bookings.length && <p className="py-5 text-sm text-[#718078]">Aucun séjour enregistré pour le moment.</p>}
         </div>
       </section>
