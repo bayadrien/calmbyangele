@@ -1,0 +1,5 @@
+"use client";
+import { signInWithPopup, signInWithRedirect } from "firebase/auth";
+import { auth, provider } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
+export default function ClientLogin() { const router = useRouter(); const login = async () => { const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent); if (mobile) await signInWithRedirect(auth, provider); else { await signInWithPopup(auth, provider); router.push("/client"); } }; return <main className="public-calm grid min-h-screen place-items-center p-5"><section className="access-card"><span className="pet-seal">♧</span><p className="eyebrow mt-6">Espace famille</p><h1>Les nouvelles de votre compagnon.</h1><p>Retrouvez ses séjours, ses documents et ses souvenirs dans un espace personnel.</p><button onClick={login} className="calm-primary mt-7 w-full">Continuer avec Google <span>→</span></button><p className="mt-5 text-center text-xs text-[#78877f]">Utilisez l’adresse e-mail communiquée à CALM.</p></section></main>; }

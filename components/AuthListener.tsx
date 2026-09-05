@@ -16,7 +16,8 @@ export default function AuthListener() {
       if (
         pathname.startsWith("/contrat") ||
         pathname.startsWith("/contrat-sejour") ||
-        pathname.startsWith("/login")
+        pathname.startsWith("/login") ||
+        pathname.startsWith("/client")
       ) {
         return
       }
