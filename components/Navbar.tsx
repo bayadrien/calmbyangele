@@ -14,6 +14,8 @@ const items = [
   { href: "/dashboard/calendar", icon: "◫", label: "Le calendrier" },
   { href: "/dashboard/photos", icon: "◈", label: "Les souvenirs" },
   { href: "/dashboard/requests", icon: "✦", label: "Les demandes" },
+  { href: "/dashboard/client-operations", icon: "✉", label: "Espace client" },
+  { href: "/dashboard/journal", icon: "☼", label: "Journal de séjour" },
 ];
 
 export default function Navbar() {
