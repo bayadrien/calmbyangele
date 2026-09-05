@@ -28,7 +28,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
     );
     const photos = photoSnapshots.flatMap((snapshot) => snapshot.docs).map((photo) => {
       const data = photo.data();
-      return { id: photo.id, bookingId: data.bookingId, imageUrl: data.imageUrl, caption: data.caption ?? "", createdAt: data.createdAt?.toDate?.().toISOString() ?? null };
+      return { id: photo.id, bookingId: data.bookingId, imageUrl: data.imageUrl, caption: data.caption ?? "", category: data.category ?? "moment", createdAt: data.createdAt?.toDate?.().toISOString() ?? null };
     });
 
     return NextResponse.json({
