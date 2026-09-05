@@ -31,9 +31,14 @@ export default function BookingsPage() {
   });
 
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editDates, setEditDates] = useState({
+  const [editDetails, setEditDetails] = useState({
     dateDebut: "",
     dateFin: "",
+    prix: "",
+    notesPubliques: "",
+    typePrestation: "pension",
+    heureArrivee: "",
+    heureDepart: "",
   });
 
   // 🔹 Fetch dogs
@@ -148,28 +153,29 @@ export default function BookingsPage() {
 
   // 🔹 UPDATE DATES
   const handleUpdateDates = async (booking: any) => {
-    if (!editDates.dateDebut || !editDates.dateFin) {
+    if (!editDetails.dateDebut || !editDetails.dateFin) {
       alert("Dates invalides");
       return;
     }
 
-    if (new Date(editDates.dateFin) <= new Date(editDates.dateDebut)) {
+    if (new Date(editDetails.dateFin) <= new Date(editDetails.dateDebut)) {
       alert("La date de fin doit être après la date de début");
       return;
     }
 
-    const nights = calculateNights(editDates.dateDebut, editDates.dateFin);
+    const nights = calculateNights(editDetails.dateDebut, editDetails.dateFin);
 
     await updateDoc(doc(db, "bookings", booking.id), {
-      dateDebut: editDates.dateDebut,
-      dateFin: editDates.dateFin,
+      ...editDetails,
+      dateDebut: editDetails.dateDebut,
+      dateFin: editDetails.dateFin,
       nombreNuits: nights,
     });
 
     if (booking.stayContractId) {
       await updateDoc(doc(db, "stayContracts", booking.stayContractId), {
-        dateDebut: editDates.dateDebut,
-        dateFin: editDates.dateFin,
+        dateDebut: editDetails.dateDebut,
+        dateFin: editDetails.dateFin,
       });
     }
 
@@ -264,10 +270,10 @@ export default function BookingsPage() {
                   <div className="space-y-2 mt-2">
                     <input
                       type="date"
-                      value={editDates.dateDebut}
+                      value={editDetails.dateDebut}
                       onChange={(e) =>
-                        setEditDates({
-                          ...editDates,
+                        setEditDetails({
+                          ...editDetails,
                           dateDebut: e.target.value,
                         })
                       }
@@ -276,15 +282,21 @@ export default function BookingsPage() {
 
                     <input
                       type="date"
-                      value={editDates.dateFin}
+                      value={editDetails.dateFin}
                       onChange={(e) =>
-                        setEditDates({
-                          ...editDates,
+                        setEditDetails({
+                          ...editDetails,
                           dateFin: e.target.value,
                         })
                       }
                       className="calm-control"
                     />
+
+                    <select value={editDetails.typePrestation} onChange={(e) => setEditDetails({ ...editDetails, typePrestation: e.target.value })} className="calm-control"><option value="pension">Pension à la maison</option><option value="visite">Visite à domicile</option><option value="promenade">Promenade</option><option value="journee">Journée d’accueil</option></select>
+                    <input type="time" aria-label="Heure d’arrivée" value={editDetails.heureArrivee} onChange={(e) => setEditDetails({ ...editDetails, heureArrivee: e.target.value })} className="calm-control" />
+                    <input type="time" aria-label="Heure de départ" value={editDetails.heureDepart} onChange={(e) => setEditDetails({ ...editDetails, heureDepart: e.target.value })} className="calm-control" />
+                    <input type="number" min="0" placeholder="Tarif (€)" value={editDetails.prix} onChange={(e) => setEditDetails({ ...editDetails, prix: e.target.value })} className="calm-control" />
+                    <textarea rows={3} placeholder="Note pour la famille" value={editDetails.notesPubliques} onChange={(e) => setEditDetails({ ...editDetails, notesPubliques: e.target.value })} className="calm-control" />
 
                     <div className="flex gap-2">
                       <button
@@ -343,9 +355,14 @@ export default function BookingsPage() {
                       <button
                         onClick={() => {
                           setEditingId(booking.id);
-                          setEditDates({
+                          setEditDetails({
                             dateDebut: booking.dateDebut,
                             dateFin: booking.dateFin,
+                            prix: booking.prix || "",
+                            notesPubliques: booking.notesPubliques || "",
+                            typePrestation: booking.typePrestation || "pension",
+                            heureArrivee: booking.heureArrivee || "",
+                            heureDepart: booking.heureDepart || "",
                           });
                         }}
                         className="mt-4 text-sm font-semibold text-[#315e4e] underline"
