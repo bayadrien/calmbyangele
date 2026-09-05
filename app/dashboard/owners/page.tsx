@@ -51,7 +51,7 @@ export default function OwnersPage() {
         <div className="owner-card-top"><span className="avatar owner-avatar">{owner.prenom?.[0] || "?"}{owner.nom?.[0] || ""}</span><div className="min-w-0 flex-1"><p className="eyebrow">Famille</p><h2>{owner.prenom || "Prénom"} {owner.nom || "non renseigné"}</h2><p>{owner.email || "Adresse e-mail non renseignée"}</p></div><button onClick={() => openEdit(owner)} className="soft-action" aria-label={`Modifier ${owner.prenom || "cette famille"}`}>Modifier</button></div>
         <div className="owner-meta"><span>◌ {dogCounts[owner.id] || 0} animal{dogCounts[owner.id] > 1 ? "ux" : ""}</span>{owner.telephone && <a href={`tel:${owner.telephone}`}>☎ {owner.telephone}</a>}</div>
         {(owner.adresse || owner.contactUrgence || owner.notes) && <div className="owner-details">{owner.adresse && <p>⌂ {owner.adresse}</p>}{owner.contactUrgence && <p className="emergency-note">! Urgence : {owner.contactUrgence}</p>}{owner.notes && <p className="owner-note">{owner.notes}</p>}</div>}
-        <div className="owner-actions">{owner.telephone && <a href={`tel:${owner.telephone}`}>Appeler</a>}{owner.email && <a href={`mailto:${owner.email}`}>Écrire</a>}<button onClick={() => openEdit(owner)}>Ouvrir et modifier →</button></div>
+        {(owner.telephone || owner.email) && <div className="owner-actions">{owner.telephone && <a href={`tel:${owner.telephone}`}>Appeler</a>}{owner.email && <a href={`mailto:${owner.email}`}>Écrire</a>}</div>}
       </article>)}
       {!visibleOwners.length && <div className="empty-state owner-empty">{owners.length ? "Aucune famille ne correspond à cette recherche." : "Votre répertoire est prêt : ajoutez votre première famille."}</div>}
     </section>
