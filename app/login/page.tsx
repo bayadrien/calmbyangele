@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showAdmin, setShowAdmin] = useState(false);
   const [clickCount, setClickCount] = useState(0);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   const checkUser = async (user: User) => {
     const token = await user.getIdTokenResult();
@@ -30,6 +31,7 @@ export default function LoginPage() {
   };
 
   const handleLogin = async () => {
+    setIsAuthenticating(true);
     try {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(
         navigator.userAgent
@@ -45,10 +47,13 @@ export default function LoginPage() {
       }
     } catch {
       alert("Erreur de connexion.");
+    } finally {
+      setIsAuthenticating(false);
     }
   };
 
   const handleEmailLogin = async () => {
+    setIsAuthenticating(true);
     try {
       const result = await signInWithEmailAndPassword(
         auth,
@@ -58,6 +63,8 @@ export default function LoginPage() {
       await checkUser(result.user);
     } catch {
       alert("Email ou mot de passe incorrect.");
+    } finally {
+      setIsAuthenticating(false);
     }
   };
 
@@ -99,7 +106,7 @@ export default function LoginPage() {
             <div className="mb-10 flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#e2eee6] text-xl text-[#315e4e]">♧</span><div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#79867f]">Conciergerie canine</p><h1 onClick={handleSecretClick} className="cursor-default text-xl font-bold tracking-tight text-[#1d3029]">CALM <em className="font-normal">by Angèle</em></h1></div></div>
             <h2 className="text-3xl font-bold tracking-tight text-[#1d3029]">Bienvenue</h2>
             <p className="mt-3 text-sm leading-6 text-[#718078]">Connectez-vous pour retrouver les familles, les séjours et les souvenirs de la maison.</p>
-            <button onClick={handleLogin} className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl bg-[#315e4e] px-6 py-4 text-sm font-bold text-white shadow-lg shadow-[#315e4e]/20 transition hover:-translate-y-0.5 hover:bg-[#254c3e]"><span className="grid h-5 w-5 place-items-center rounded-full bg-white text-[11px] font-bold text-[#315e4e]">G</span> Continuer avec Google</button>
+            <button onClick={handleLogin} disabled={isAuthenticating} className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl bg-[#315e4e] px-6 py-4 text-sm font-bold text-white shadow-lg shadow-[#315e4e]/20 transition hover:-translate-y-0.5 hover:bg-[#254c3e] disabled:cursor-wait disabled:opacity-70"><span className="grid h-5 w-5 place-items-center rounded-full bg-white text-[11px] font-bold text-[#315e4e]">G</span> {isAuthenticating ? "Connexion en cours…" : "Continuer avec Google"}</button>
             <p className="mt-4 text-center text-xs text-[#87928c]">Accès réservé à l’équipe CALM.</p>
             {showAdmin && (
               <div className="mt-7 space-y-4 border-t border-[#e5e7df] pt-6 text-left">
@@ -121,10 +128,10 @@ export default function LoginPage() {
             />
 
             <button
-              onClick={handleEmailLogin}
-              className="w-full rounded-xl bg-[#1d3029] py-3 text-sm font-bold text-white transition hover:bg-[#315e4e]"
+              onClick={handleEmailLogin} disabled={isAuthenticating}
+              className="w-full rounded-xl bg-[#1d3029] py-3 text-sm font-bold text-white transition hover:bg-[#315e4e] disabled:cursor-wait disabled:opacity-70"
             >
-              Connexion
+              {isAuthenticating ? "Connexion en cours…" : "Connexion"}
             </button>
           </div>
             )}
