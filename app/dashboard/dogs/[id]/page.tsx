@@ -387,6 +387,8 @@ console.log("DOG:", dog);
 
                     <p><strong>Comportement :</strong> {animal.comportement}</p>
                     <p><strong>Maladies / Antécédents :</strong> {animal.maladies}</p>
+                    {animal.temperament && <p><strong>Tempérament :</strong> {animal.temperament}</p>}
+                    {animal.alertesSante && <p className="rounded-xl bg-[#fff0e9] p-3 text-[#8d482f]"><strong>Point de vigilance :</strong> {animal.alertesSante}</p>}
 
                     <p><strong>Traitement :</strong> {animal.traitementOuiNon}</p>
                     {animal.traitementOuiNon === "Oui" && (
@@ -538,6 +540,19 @@ console.log("DOG:", dog);
                         setFormData({ ...formData, comportement: e.target.value })
                         }
                         className="border p-2 rounded-lg w-full col-span-2"
+                    />
+
+                    <input
+                        placeholder="Tempérament (joueur, réservé… )"
+                        value={formData.temperament || ""}
+                        onChange={(e) => setFormData({ ...formData, temperament: e.target.value })}
+                        className="border p-2 rounded-lg w-full"
+                    />
+                    <input
+                        placeholder="Santé / allergies à connaître"
+                        value={formData.alertesSante || ""}
+                        onChange={(e) => setFormData({ ...formData, alertesSante: e.target.value })}
+                        className="border p-2 rounded-lg w-full"
                     />
 
                     {/* Maladies */}
