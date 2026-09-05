@@ -11,6 +11,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
+import { formatDate } from "@/lib/formatDate";
 
 export default function BookingsPage() {
   const [dogs, setDogs] = useState<any[]>([]);
@@ -175,6 +176,7 @@ export default function BookingsPage() {
     setEditingId(null);
     fetchBookings();
   };
+  const plannedNights = form.dateDebut && form.dateFin && new Date(form.dateFin) > new Date(form.dateDebut) ? calculateNights(form.dateDebut, form.dateFin) : 0;
 
   const toggleChecklistItem = async (booking: any, key: "carnetSante" | "nourriture" | "traitement" | "harnais") => {
     const checklist = { carnetSante: false, nourriture: false, traitement: false, harnais: false, ...(booking.checklist ?? {}) };
@@ -208,27 +210,13 @@ export default function BookingsPage() {
 
           <select value={form.typePrestation} onChange={(e) => setForm({ ...form, typePrestation: e.target.value })} className="calm-control"><option value="pension">Pension à la maison</option><option value="visite">Visite à domicile</option><option value="promenade">Promenade</option><option value="journee">Journée d’accueil</option></select>
 
-          <input
-            type="date"
-            value={form.dateDebut}
-            onChange={(e) =>
-              setForm({ ...form, dateDebut: e.target.value })
-            }
-            className="calm-control"
-          />
+          <label className="calm-label">Arrivée<input type="date" value={form.dateDebut} onChange={(e) => setForm({ ...form, dateDebut: e.target.value })} /></label>
 
-          <input type="time" aria-label="Heure d’arrivée" value={form.heureArrivee} onChange={(e) => setForm({ ...form, heureArrivee: e.target.value })} className="calm-control" />
+          <label className="calm-label">Heure d’arrivée <span className="label-optional">facultatif</span><input type="time" value={form.heureArrivee} onChange={(e) => setForm({ ...form, heureArrivee: e.target.value })} /></label>
 
-          <input
-            type="date"
-            value={form.dateFin}
-            onChange={(e) =>
-              setForm({ ...form, dateFin: e.target.value })
-            }
-            className="calm-control"
-          />
+          <label className="calm-label">Départ<input type="date" value={form.dateFin} min={form.dateDebut} onChange={(e) => setForm({ ...form, dateFin: e.target.value })} /></label>
 
-          <input type="time" aria-label="Heure de départ" value={form.heureDepart} onChange={(e) => setForm({ ...form, heureDepart: e.target.value })} className="calm-control" />
+          <label className="calm-label">Heure de départ <span className="label-optional">facultatif</span><input type="time" value={form.heureDepart} onChange={(e) => setForm({ ...form, heureDepart: e.target.value })} /></label>
 
           <input
             placeholder="Tarif du séjour (€)"
@@ -238,6 +226,7 @@ export default function BookingsPage() {
             }
             className="calm-control"
           />
+          {plannedNights > 0 && <p className="col-span-2 rounded-xl bg-[#edf5ef] px-4 py-3 text-sm font-semibold text-[#315e4e]">Durée estimée : {plannedNights} nuit{plannedNights > 1 ? "s" : ""}.</p>}
 
           <textarea
             placeholder="Une note à transmettre à la famille (facultatif)"
@@ -315,11 +304,10 @@ export default function BookingsPage() {
                   </div>
                 ) : (
                   <>
-                    <p>
-                      {booking.dateDebut} → {booking.dateFin}
-                    </p>
-                    <p>{booking.nombreNuits} nuits</p>
+                    <p className="mt-1 font-semibold text-[#41594d]">Du {formatDate(booking.dateDebut)} au {formatDate(booking.dateFin)}</p>
+                    <p className="mt-1 text-sm text-[#718078]">{booking.nombreNuits} nuit{booking.nombreNuits > 1 ? "s" : ""}</p>
                     <p className="mt-1 text-sm text-[#61736a]">{booking.typePrestation || "Pension à la maison"}{booking.heureArrivee && ` · arrivée ${booking.heureArrivee}`}{booking.heureDepart && ` · départ ${booking.heureDepart}`}</p>
+                    {booking.notesPubliques && <p className="mt-3 rounded-xl border border-[#e3e9df] bg-[#fafcf9] p-3 text-sm leading-6 text-[#5c7165]"><b className="text-[#315e4e]">Note pour la famille :</b> {booking.notesPubliques}</p>}
                     <div className="mt-4 rounded-xl bg-[#f2f7f3] p-3"><p className="text-xs font-bold uppercase tracking-[.12em] text-[#52705f]">Préparation · {Object.values(booking.checklist ?? {}).filter(Boolean).length}/4</p><div className="mt-2 flex flex-wrap gap-2">{([['carnetSante', 'Carnet'], ['nourriture', 'Nourriture'], ['traitement', 'Traitement'], ['harnais', 'Laisse']] as const).map(([key, label]) => <button key={key} onClick={() => toggleChecklistItem(booking, key)} className={`rounded-full px-3 py-1 text-xs font-semibold transition ${booking.checklist?.[key] ? 'bg-[#315e4e] text-white' : 'bg-white text-[#607168] ring-1 ring-[#d9e6dc]'}`}>{booking.checklist?.[key] ? '✓ ' : ''}{label}</button>)}</div></div>
 
                     <div className="flex justify-between items-center mt-3">
