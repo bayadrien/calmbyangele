@@ -13,6 +13,6 @@ export async function POST(request: Request) {
     const dog = await adminDb.collection("dogs").doc(dogId).get(); if (!dog.exists || dog.data()?.ownerId !== owner.id) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
     const requestDoc = await adminDb.collection("clientRequests").add({ ownerId: owner.id, dogId, dateDebut, dateFin, typePrestation: String(body.typePrestation || "pension"), heureArrivee: String(body.heureArrivee || ""), heureDepart: String(body.heureDepart || ""), notes: String(body.notes || "").slice(0, 1500), statut: "nouvelle", createdAt: new Date() });
     if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) await transporter.sendMail({ from: `"CALM by Angèle" <${process.env.GMAIL_USER}>`, to: process.env.GMAIL_USER, subject: `Nouvelle demande de garde · ${dog.data()?.nom || "compagnon"}`, text: `Demande client reçue pour ${dog.data()?.nom || "un compagnon"}, du ${dateDebut} au ${dateFin}. Référence : ${requestDoc.id}` });
-    return NextResponse.json({ ok: true });
-  } catch { return NextResponse.json({ error: "SERVER" }, { status: 500 }); }
+    return NextResponse.json({ ok: true, requestId: requestDoc.id }, { status: 201 });
+  } catch (error) { console.error("Client booking request failed", error); return NextResponse.json({ error: "SERVER" }, { status: 500 }); }
 }
