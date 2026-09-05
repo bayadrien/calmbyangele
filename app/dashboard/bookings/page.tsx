@@ -176,6 +176,13 @@ export default function BookingsPage() {
     fetchBookings();
   };
 
+  const toggleChecklistItem = async (booking: any, key: "carnetSante" | "nourriture" | "traitement" | "harnais") => {
+    const checklist = { carnetSante: false, nourriture: false, traitement: false, harnais: false, ...(booking.checklist ?? {}) };
+    checklist[key] = !checklist[key];
+    await updateDoc(doc(db, "bookings", booking.id), { checklist });
+    setBookings((current) => current.map((item) => item.id === booking.id ? { ...item, checklist } : item));
+  };
+
   return (
     <div className="space-y-8">
       <header className="page-intro"><div><p className="eyebrow">Les séjours</p><h1>Le rythme doux de la maison.</h1><p>Planifiez chaque accueil, gardez le contrat à portée de main et ne perdez aucun détail.</p></div><span className="page-count">{bookings.length} séjour{bookings.length > 1 ? "s" : ""}</span></header>
@@ -313,7 +320,7 @@ export default function BookingsPage() {
                     </p>
                     <p>{booking.nombreNuits} nuits</p>
                     <p className="mt-1 text-sm text-[#61736a]">{booking.typePrestation || "Pension à la maison"}{booking.heureArrivee && ` · arrivée ${booking.heureArrivee}`}{booking.heureDepart && ` · départ ${booking.heureDepart}`}</p>
-                    {booking.checklist && <p className="mt-3 text-xs font-semibold text-[#52705f]">Préparation : {Object.values(booking.checklist).filter(Boolean).length}/4 éléments prêts</p>}
+                    <div className="mt-4 rounded-xl bg-[#f2f7f3] p-3"><p className="text-xs font-bold uppercase tracking-[.12em] text-[#52705f]">Préparation · {Object.values(booking.checklist ?? {}).filter(Boolean).length}/4</p><div className="mt-2 flex flex-wrap gap-2">{([['carnetSante', 'Carnet'], ['nourriture', 'Nourriture'], ['traitement', 'Traitement'], ['harnais', 'Laisse']] as const).map(([key, label]) => <button key={key} onClick={() => toggleChecklistItem(booking, key)} className={`rounded-full px-3 py-1 text-xs font-semibold transition ${booking.checklist?.[key] ? 'bg-[#315e4e] text-white' : 'bg-white text-[#607168] ring-1 ring-[#d9e6dc]'}`}>{booking.checklist?.[key] ? '✓ ' : ''}{label}</button>)}</div></div>
 
                     <div className="flex justify-between items-center mt-3">
                       {/* Lien contrat si en attente */}
