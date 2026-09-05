@@ -63,6 +63,8 @@ export default function CalendarPage() {
   const [unavailabilities, setUnavailabilities] = useState<
     Unavailability[]
   >([]);
+  const [showUnavailabilityForm, setShowUnavailabilityForm] = useState(false);
+  const [unavailabilityDates, setUnavailabilityDates] = useState({ start: "", end: "" });
 
   useEffect(() => {
     fetchData();
@@ -209,10 +211,8 @@ export default function CalendarPage() {
   ========================= */
 
   const addUnavailability = async () => {
-    const start = prompt("Date début (YYYY-MM-DD)");
-    const end = prompt("Date fin (YYYY-MM-DD)");
-
-    if (!start || !end) return;
+    const { start, end } = unavailabilityDates;
+    if (!start || !end || new Date(end) < new Date(start)) return;
 
     await addDoc(collection(db, "unavailabilities"), {
       startDate: start,
@@ -220,6 +220,8 @@ export default function CalendarPage() {
       createdAt: new Date(),
     });
 
+    setUnavailabilityDates({ start: "", end: "" });
+    setShowUnavailabilityForm(false);
     fetchData();
   };
 
@@ -261,30 +263,23 @@ export default function CalendarPage() {
       </div>
 
       {/* BOUTON INDISPO */}
-      <button
-        onClick={addUnavailability}
-        className="rounded-xl border border-[#edc8bd] bg-[#fff4ef] px-4 py-3 text-sm font-bold text-[#a95537] transition hover:bg-[#fde8dc]"
-      >
-        Ajouter indisponibilité
-      </button>
+      <section className="rounded-2xl border border-[#edc8bd] bg-[#fff8f5] p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="eyebrow text-[#a95537]">Votre rythme</p><h2 className="mt-1 text-lg font-bold text-[#763c2a]">Prévoir une indisponibilité</h2></div><button onClick={() => setShowUnavailabilityForm((open) => !open)} className="rounded-xl border border-[#edc8bd] bg-white px-4 py-3 text-sm font-bold text-[#a95537]">{showUnavailabilityForm ? "Fermer" : "Ajouter une période"}</button></div>{showUnavailabilityForm && <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto]"><input aria-label="Début de l’indisponibilité" type="date" value={unavailabilityDates.start} onChange={(event) => setUnavailabilityDates({ ...unavailabilityDates, start: event.target.value })} className="calm-control" /><input aria-label="Fin de l’indisponibilité" type="date" value={unavailabilityDates.end} min={unavailabilityDates.start} onChange={(event) => setUnavailabilityDates({ ...unavailabilityDates, end: event.target.value })} className="calm-control" /><button onClick={addUnavailability} disabled={!unavailabilityDates.start || !unavailabilityDates.end} className="calm-primary disabled:opacity-50">Enregistrer</button></div>}</section>
 
       {/* LISTE INDISPOS */}
       {unavailabilities.length > 0 && (
-        <div className="bg-red-50 p-4 rounded-xl">
-          <h3 className="font-semibold mb-3">
-            Vos indisponibilités
-          </h3>
+        <div className="rounded-2xl border border-[#f1d8d0] bg-[#fff8f5] p-5">
+          <h3 className="font-semibold text-[#763c2a] mb-3">Vos indisponibilités</h3>
           {unavailabilities.map((u) => (
             <div
               key={u.id}
-              className="flex justify-between mb-2"
+              className="mb-2 flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm"
             >
               <span>
                 {u.startDate} → {u.endDate}
               </span>
               <button
                 onClick={() => deleteUnavailability(u.id)}
-                className="text-red-600"
+                className="font-semibold text-[#a95537]"
               >
                 Supprimer
               </button>
