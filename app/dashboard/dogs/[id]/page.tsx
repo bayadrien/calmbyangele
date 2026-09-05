@@ -468,6 +468,26 @@ console.log("DOG:", dog);
                 ) : (
                 <>
                     <div className="grid grid-cols-2 gap-4">
+                    {/* Identité */}
+                    <input
+                        placeholder="Prénom de l’animal"
+                        value={formData.nom || ""}
+                        onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+                        className="border p-2 rounded-lg w-full"
+                    />
+                    <select
+                        value={formData.type || "chien"}
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                        className="border p-2 rounded-lg w-full"
+                    >
+                      <option value="chien">Chien</option><option value="chat">Chat</option><option value="lapin">Lapin</option><option value="autre">Autre</option>
+                    </select>
+                    <input
+                        placeholder="Race ou espèce"
+                        value={formData.race || ""}
+                        onChange={(e) => setFormData({ ...formData, race: e.target.value })}
+                        className="border p-2 rounded-lg w-full col-span-2"
+                    />
                       
                     {/* Propriétaire */}
                     <select
@@ -635,6 +655,13 @@ console.log("DOG:", dog);
                         <option value="Non">Non</option>
                         </select>
                     ))}
+
+                    <textarea
+                      placeholder="Notes d’équipe : habitudes, rituels, consignes…"
+                      value={formData.notes || ""}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      className="border p-2 rounded-lg w-full col-span-2"
+                    />
 
                     </div>
 
