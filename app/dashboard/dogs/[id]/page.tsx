@@ -299,27 +299,27 @@ console.log("DOG:", dog);
   );
 
   const tabStyle = (tab: string) =>
-    `px-5 py-2 rounded-t-xl cursor-pointer ${
+    `rounded-full px-4 py-2 text-sm font-semibold transition cursor-pointer ${
       activeTab === tab
-        ? "bg-white shadow text-black font-semibold"
-        : "bg-purple-200 text-black"
+        ? "bg-[#315e4e] text-white shadow-sm"
+        : "bg-[#edf3ed] text-[#547064] hover:bg-[#e0ece2]"
     }`;
 
   return (
     <>
       {/* HEADER */}
-      <div className="mb-8">
-        <div className="flex items-center gap-6 mb-8">
+      <div className="page-intro mb-8">
+        <div className="flex items-center gap-5">
             <div className="relative">
                 <img
                 src={
                     animal.photoProfil ||
                     "https://via.placeholder.com/120x120.png?text=Photo"
                 }
-                className="w-28 h-28 rounded-full object-cover border-4 border-purple-300 shadow"
+                className="h-24 w-24 rounded-[1.7rem] object-cover border-4 border-[#e3eee5] shadow-sm"
                 />
 
-                <label className="absolute bottom-0 right-0 bg-purple-600 text-white text-xs px-3 py-1 rounded-full cursor-pointer">
+                <label className="absolute bottom-0 right-0 cursor-pointer rounded-full bg-[#315e4e] px-3 py-1 text-xs font-semibold text-white shadow-sm">
                 Modifier
                 <input
                     type="file"
@@ -333,10 +333,10 @@ console.log("DOG:", dog);
             </div>
 
             <div>
-                <h1 className="text-3xl font-bold text-black">
+                <p className="eyebrow">Fiche compagnon</p><h1 className="mt-1 text-3xl font-bold text-[#20372d]">
                 {animal.nom}
                 </h1>
-                <p className="text-gray-800">
+                <p className="mt-1 text-sm text-[#66776e]">
                 {animal.race} • {calculateAge(animal.dateNaissance)}
                 </p>
             </div>
@@ -344,7 +344,7 @@ console.log("DOG:", dog);
       </div>
 
       {/* ONGLET NAV */}
-      <div className="flex gap-2 mb-6">
+      <div className="mb-6 flex flex-wrap gap-2">
         <div onClick={() => setActiveTab("fiche")} className={tabStyle("fiche")}>
           Fiche
         </div>
@@ -356,14 +356,14 @@ console.log("DOG:", dog);
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-b-2xl shadow text-black">
+      <div className="calm-panel text-[#354a3f]">
 
         {/* FICHE */}
             {activeTab === "fiche" && (
             <>
                 {!editing ? (
                 <>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-4 md:grid-cols-2">
 
                     <p className="col-span-2">
                         <strong>Propriétaire :</strong>{" "}
@@ -406,14 +406,14 @@ console.log("DOG:", dog);
 
                     <button
                     onClick={() => setEditing(true)}
-                    className="mt-6 bg-purple-600 text-white px-4 py-2 rounded-xl"
+                    className="calm-primary mt-6"
                     >
                     Modifier
                     </button>
 
-                    <div className="mt-8 bg-purple-50 p-6 rounded-2xl space-y-4">
-                      <h3 className="text-lg font-semibold text-purple-900">
-                        🔐 Galerie publique
+                    <div className="mt-8 space-y-4 rounded-2xl border border-[#dce9df] bg-[#f3f8f4] p-6">
+                      <h3 className="text-lg font-semibold text-[#274b3d]">
+                        Galerie privée
                       </h3>
                         <label className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-purple-200">
                           <span className="text-gray-800 font-medium">
@@ -433,8 +433,8 @@ console.log("DOG:", dog);
                                 galleryEnabled: newValue,
                               });
                             }}
-                            className={`relative w-14 h-8 rounded-full transition-all duration-300 ${
-                              animal.galleryEnabled ? "bg-purple-600" : "bg-gray-300"
+                        className={`relative w-14 h-8 rounded-full transition-all duration-300 ${
+                              animal.galleryEnabled ? "bg-[#315e4e]" : "bg-gray-300"
                             }`}
                           >
                             <span
@@ -446,7 +446,7 @@ console.log("DOG:", dog);
                         </label>
                         <button
                           onClick={handleSendGallery}
-                          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl"
+                          className="calm-primary"
                         >
                           📸 Envoyer accès galerie
                         </button>
