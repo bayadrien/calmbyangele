@@ -11,6 +11,7 @@ const fields = [
 
 export default function OwnersPage() {
   const [owners, setOwners] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
   const [form, setForm] = useState({ prenom: "", nom: "", email: "", telephone: "", adresse: "", contactUrgence: "", notes: "" });
   const fetchOwners = async () => setOwners((await getDocs(collection(db, "owners"))).docs.map((owner) => ({ id: owner.id, ...owner.data() })));
   useEffect(() => { fetchOwners(); }, []);
@@ -25,9 +26,9 @@ export default function OwnersPage() {
         <button type="submit" className="calm-primary md:col-span-2">Créer la fiche famille <span>→</span></button>
       </form>
     </section>
-    <section><div className="section-heading"><div><p className="eyebrow">Répertoire</p><h2>Vos familles</h2></div></div><div className="grid gap-3 md:grid-cols-2">
-      {owners.map((owner) => <article key={owner.id} className="directory-card"><span className="avatar">{owner.prenom?.[0] || "?"}{owner.nom?.[0] || ""}</span><div className="min-w-0"><h3>{owner.prenom} {owner.nom}</h3><p>{owner.email || "Adresse e-mail non renseignée"}</p>{owner.telephone && <small>{owner.telephone}</small>}</div><span className="card-arrow">→</span></article>)}
-      {!owners.length && <div className="empty-state md:col-span-2">Aucune famille enregistrée. Créez votre première fiche ci-dessus.</div>}
+    <section><div className="section-heading"><div><p className="eyebrow">Répertoire</p><h2>Vos familles</h2></div><input className="directory-search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Rechercher une famille…" aria-label="Rechercher une famille" /></div><div className="grid gap-3 md:grid-cols-2">
+      {owners.filter((owner) => `${owner.prenom} ${owner.nom} ${owner.email}`.toLowerCase().includes(search.toLowerCase())).map((owner) => <article key={owner.id} className="directory-card"><span className="avatar">{owner.prenom?.[0] || "?"}{owner.nom?.[0] || ""}</span><div className="min-w-0"><h3>{owner.prenom} {owner.nom}</h3><p>{owner.email || "Adresse e-mail non renseignée"}</p>{owner.telephone && <small>{owner.telephone}</small>}</div><span className="card-arrow">→</span></article>)}
+      {!owners.length && <div className="empty-state md:col-span-2">Aucune famille enregistrée. Créez votre première fiche ci-dessus.</div>}{Boolean(owners.length && !owners.filter((owner) => `${owner.prenom} ${owner.nom} ${owner.email}`.toLowerCase().includes(search.toLowerCase())).length) && <div className="empty-state md:col-span-2">Aucune famille ne correspond à cette recherche.</div>}
     </div></section>
   </div>;
 }

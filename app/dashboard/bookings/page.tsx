@@ -23,6 +23,9 @@ export default function BookingsPage() {
     prix: "",
     notesPubliques: "",
     modalite: "",
+    typePrestation: "pension",
+    heureArrivee: "",
+    heureDepart: "",
   });
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -132,6 +135,9 @@ export default function BookingsPage() {
       prix: "",
       notesPubliques: "",
       modalite: "",
+      typePrestation: "pension",
+      heureArrivee: "",
+      heureDepart: "",
     });
 
     fetchBookings();
@@ -191,6 +197,8 @@ export default function BookingsPage() {
             ))}
           </select>
 
+          <select value={form.typePrestation} onChange={(e) => setForm({ ...form, typePrestation: e.target.value })} className="calm-control"><option value="pension">Pension à la maison</option><option value="visite">Visite à domicile</option><option value="promenade">Promenade</option><option value="journee">Journée d’accueil</option></select>
+
           <input
             type="date"
             value={form.dateDebut}
@@ -200,6 +208,8 @@ export default function BookingsPage() {
             className="calm-control"
           />
 
+          <input type="time" aria-label="Heure d’arrivée" value={form.heureArrivee} onChange={(e) => setForm({ ...form, heureArrivee: e.target.value })} className="calm-control" />
+
           <input
             type="date"
             value={form.dateFin}
@@ -208,6 +218,8 @@ export default function BookingsPage() {
             }
             className="calm-control"
           />
+
+          <input type="time" aria-label="Heure de départ" value={form.heureDepart} onChange={(e) => setForm({ ...form, heureDepart: e.target.value })} className="calm-control" />
 
           <input
             placeholder="Tarif du séjour (€)"
@@ -296,6 +308,7 @@ export default function BookingsPage() {
                       {booking.dateDebut} → {booking.dateFin}
                     </p>
                     <p>{booking.nombreNuits} nuits</p>
+                    <p className="mt-1 text-sm text-[#61736a]">{booking.typePrestation || "Pension à la maison"}{booking.heureArrivee && ` · arrivée ${booking.heureArrivee}`}{booking.heureDepart && ` · départ ${booking.heureDepart}`}</p>
 
                     <div className="flex justify-between items-center mt-3">
                       {/* Lien contrat si en attente */}

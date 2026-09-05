@@ -14,6 +14,8 @@ export default function AnimalsPage() {
     race: "",
     dateNaissance: "",
     ownerId: "",
+    temperament: "",
+    alertesSante: "",
   });
 
   const fetchOwners = async () => {
@@ -93,6 +95,8 @@ export default function AnimalsPage() {
       race: "",
       dateNaissance: "",
       ownerId: "",
+      temperament: "",
+      alertesSante: "",
     });
 
     fetchAnimals();
@@ -165,6 +169,9 @@ export default function AnimalsPage() {
           className="calm-control"
         />
 
+        <input placeholder="Tempérament (joueur, réservé…)" value={form.temperament} onChange={(e) => setForm({ ...form, temperament: e.target.value })} className="calm-control" />
+        <input placeholder="Santé / allergies à connaître" value={form.alertesSante} onChange={(e) => setForm({ ...form, alertesSante: e.target.value })} className="calm-control" />
+
         <input
           placeholder="Race ou espèce"
           value={form.race}
@@ -218,6 +225,7 @@ export default function AnimalsPage() {
             <p className="text-sm text-gray-800">
               {animal.race}
             </p>
+            {(animal.temperament || animal.alertesSante) && <p className="mt-2 text-xs text-[#52675b]">{animal.temperament && `• ${animal.temperament} `}{animal.alertesSante && `• Santé : ${animal.alertesSante}`}</p>}
             <p className="text-xs text-gray-600 mt-2">
               Galerie privée prête à partager
             </p>

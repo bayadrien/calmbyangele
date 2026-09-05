@@ -72,6 +72,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #6f9b85
 .directory-card:hover, .pet-card:hover, .stay-card:hover { transform:translateY(-2px); box-shadow:0 16px 32px rgba(42,62,51,.08); }
 .directory-card h3, .pet-card .font-semibold { color:var(--ink); font-size:1rem; font-weight:750; }
 .directory-card p, .directory-card small { display:block; overflow:hidden; color:var(--muted); font-size:.8rem; text-overflow:ellipsis; white-space:nowrap; }
+.directory-search { width:16rem; border:1px solid #cbd8ce; border-radius:.85rem; background:#fffefc; padding:.7rem .85rem; color:var(--ink); font-size:.82rem; }
 .avatar { display:grid; width:2.7rem; height:2.7rem; flex:none; place-items:center; border-radius:1rem; background:#e2eee6; color:#315e4e; font-size:.8rem; font-weight:800; }
 .card-arrow { margin-left:auto; color:#789385; }
 .empty-state { border:1px dashed #bfd4c6; border-radius:1.2rem; padding:1.25rem; color:#738177; font-size:.9rem; text-align:center; }
