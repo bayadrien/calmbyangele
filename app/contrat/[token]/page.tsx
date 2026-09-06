@@ -487,16 +487,20 @@ export default function ContratPage() {
 
 return (
 <div id="contract-content">
-  <div className="public-calm min-h-screen py-10 px-4 sm:px-6 flex justify-center">
-    <div className="bg-white shadow-2xl rounded-[2rem] p-6 sm:p-12 max-w-4xl w-full space-y-12">
+  <div className="public-calm initial-contract-shell min-h-screen py-8 px-4 sm:px-6 flex justify-center">
+    <div className="initial-contract-card bg-white shadow-2xl rounded-[2rem] p-5 sm:p-10 max-w-4xl w-full space-y-7">
 
-      <div className="text-center space-y-2">
+      <div className="initial-contract-heading text-center space-y-2">
+        <p className="eyebrow">Dossier d’accueil</p>
         <h1 className="text-4xl font-bold text-purple-900">
           Bienvenue chez CALM
         </h1>
         <p className="text-gray-600">
-          Contrat de garde · à compléter en toute simplicité
+          Quelques informations pour prendre soin de votre compagnon, en toute sérénité.
         </p>
+        <div className="initial-contract-steps" aria-label="Les étapes du contrat">
+          <span>01 · Famille</span><span>02 · Compagnon</span><span>03 · Santé</span><span>04 · Signature</span>
+        </div>
       </div>
 
 {/* SECTION 1 */}
