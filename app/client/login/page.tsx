@@ -38,7 +38,7 @@ export default function ClientLogin() {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setLoading(true); setMessage("");
     try {
-      if (mode === "reset") { await sendPasswordResetEmail(auth, email); setMessage("Un lien pour choisir un nouveau mot de passe vient d’être envoyé à cette adresse."); }
+      if (mode === "reset") { const response = await fetch("/api/client/password-reset", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) }); const result = await response.json().catch(() => ({})); if (!response.ok) throw { code: result.error === "INVALID" ? "auth/invalid-email" : "auth/network-request-failed" }; if (result.fallback) await sendPasswordResetEmail(auth, email); setMessage("Si cette adresse possède un accès CALM, un lien pour choisir un nouveau mot de passe vient d’être envoyé."); }
       else if (mode === "signup") { await createUserWithEmailAndPassword(auth, email, password); router.push("/client"); }
       else { await signInWithEmailAndPassword(auth, email, password); router.push("/client"); }
     } catch (error) { setMessage(errorMessage(error)); }
