@@ -19,6 +19,8 @@ export async function GET(request: Request) {
     const stayContracts = (await adminDb.collection("stayContracts").where("ownerId", "==", owner.id).get()).docs.map((item) => ({ id: item.id, ...item.data() }));
     const bookingIds = new Set(bookings.map((booking: any) => booking.id));
     const photos = (await adminDb.collection("photos").get()).docs.map((item) => ({ id: item.id, ...item.data() } as any)).filter((item) => bookingIds.has(item.bookingId));
-    return NextResponse.json({ owner, dogs, bookings, contracts, stayContracts, photos });
+    const photoIds = new Set(photos.map((photo: any) => photo.id));
+    const comments = (await adminDb.collection("photoComments").where("ownerId", "==", owner.id).get()).docs.map((item) => ({ id: item.id, ...item.data() })).filter((item: any) => photoIds.has(item.photoId));
+    return NextResponse.json({ owner, dogs, bookings, contracts, stayContracts, photos, comments });
   } catch { return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 }); }
 }
