@@ -3,8 +3,8 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 
 type Item = Record<string, any> & { id: string }; // Firestore records evolve with the care form.
 const emptyDog = { nom: "", type: "chien", race: "", dateNaissance: "", ownerId: "", temperament: "", alertesSante: "" };
@@ -34,9 +34,8 @@ export default function AnimalsPage() {
   const submit = async (event: FormEvent) => {
     event.preventDefault(); setSaving(true); setNotice("");
     try {
-      const slug = `${form.nom.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-")}-${Math.random().toString(36).slice(2, 8)}`;
-      await addDoc(collection(db, "dogs"), { ...form, slug, motDePasse: Math.random().toString(36).slice(2, 10), createdAt: new Date() });
-      await load(); setForm(emptyDog); setNotice("La fiche compagnon a été créée. Vous pouvez maintenant l’ouvrir pour compléter tous les détails.");
+      const token = await auth.currentUser?.getIdToken(); const response = await fetch("/api/admin/pets", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(form) }); const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.error || "CREATE_FAILED");
+      await load(); setForm(emptyDog); setNotice(result.emailSent ? "La fiche et le contrat initial sont créés. La famille a reçu un e-mail pour compléter la fiche et signer." : "La fiche et le contrat initial sont créés. L’e-mail n’a pas pu être envoyé : vous pouvez transmettre les liens depuis la fiche.");
     } catch { setNotice("Impossible de créer cette fiche pour le moment."); }
     finally { setSaving(false); }
   };
