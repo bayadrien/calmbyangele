@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import {
   collection,
   addDoc,
@@ -133,6 +133,12 @@ export default function BookingsPage() {
     await updateDoc(bookingRef, {
       stayContractId: stayContractRef.id,
       stayContractLink: link,
+    });
+
+    await fetch("/api/notify-client/stay-contract-created", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${await auth.currentUser?.getIdToken()}` },
+      body: JSON.stringify({ stayContractId: stayContractRef.id }),
     });
 
     setForm({

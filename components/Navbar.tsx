@@ -8,7 +8,7 @@ import { auth } from "@/lib/firebase";
 import CalmLogoMark from "@/components/CalmLogoMark";
 
 const items = [
-  { href: "/dashboard", icon: "⌂", label: "Vue d’ensemble" }, { href: "/dashboard/owners", icon: "♡", label: "Les familles" }, { href: "/dashboard/dogs", icon: "◌", label: "Les animaux" }, { href: "/dashboard/bookings", icon: "□", label: "Les séjours" }, { href: "/dashboard/calendar", icon: "◫", label: "Le calendrier" }, { href: "/dashboard/photos", icon: "◈", label: "Les souvenirs" }, { href: "/dashboard/requests", icon: "✦", label: "Les demandes" }, { href: "/dashboard/client-operations", icon: "✉", label: "Espace client" }, { href: "/dashboard/journal", icon: "☼", label: "Journal de séjour" },
+  { href: "/dashboard", icon: "⌂", label: "Vue d’ensemble" }, { href: "/dashboard/owners", icon: "♡", label: "Les familles" }, { href: "/dashboard/dogs", icon: "◌", label: "Les animaux" }, { href: "/dashboard/bookings", icon: "□", label: "Les séjours" }, { href: "/dashboard/calendar", icon: "◫", label: "Le calendrier" }, { href: "/dashboard/photos", icon: "◈", label: "Les souvenirs" }, { href: "/dashboard/requests", icon: "✦", label: "Les demandes" }, { href: "/dashboard/client-operations", icon: "✉", label: "Espace client" }, { href: "/dashboard/journal", icon: "☼", label: "Journal de séjour" }, { href: "/dashboard/urgence", icon: "!", label: "Accès urgence" },
 ];
 
 export default function Navbar() {
