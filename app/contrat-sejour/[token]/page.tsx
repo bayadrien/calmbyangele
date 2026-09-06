@@ -367,10 +367,10 @@ export default function ContratSejourPage() {
   // 🎨 UI (INCHANGÉE)
   // ==========================
   return (
-    <div className="public-calm min-h-screen py-10 px-4 sm:px-6 flex justify-center">
-      <div className="bg-white shadow-2xl rounded-[2rem] p-6 sm:p-12 max-w-4xl w-full space-y-10">
+    <div className="stay-contract-shell public-calm min-h-screen py-7 px-4 sm:px-6 flex justify-center">
+      <div className="stay-contract-card bg-white shadow-2xl rounded-[2rem] p-6 sm:p-12 max-w-4xl w-full space-y-10">
 
-        <div className="text-center space-y-2">
+        <div className="stay-contract-heading text-center space-y-2">
           <h1 className="text-3xl font-bold text-purple-900">
             CALM by Angèle
           </h1>
