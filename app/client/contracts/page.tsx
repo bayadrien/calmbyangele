@@ -1,55 +1,21 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
 
 type Contract = Record<string, any> & { id: string; kind: "initial" | "stay" };
-
-const asDate = (value: any) => {
-  if (!value) return "Date non renseignée";
-  const date = value?.seconds ? new Date(value.seconds * 1000) : new Date(value);
-  return Number.isNaN(date.getTime()) ? "Date non renseignée" : date.toLocaleDateString("fr-FR");
-};
+const asDate = (value: any) => { if (!value) return "Date non renseignée"; const date = value?.seconds ? new Date(value.seconds * 1000) : new Date(value); return Number.isNaN(date.getTime()) ? "Date non renseignée" : date.toLocaleDateString("fr-FR"); };
+const timestamp = (value: any) => { const date = value?.seconds ? new Date(value.seconds * 1000) : new Date(value); return Number.isNaN(date?.getTime()) ? 0 : date.getTime(); };
 
 export default function ClientContracts() {
-  const [contracts, setContracts] = useState<Contract[]>([]);
-  const [dogs, setDogs] = useState<any[]>([]);
-  const [bookings, setBookings] = useState<any[]>([]);
-
-  useEffect(() => {
-    const load = async () => {
-      const token = await auth.currentUser?.getIdToken();
-      const response = await fetch("/api/client/portal", { headers: { Authorization: `Bearer ${token}` } });
-      if (!response.ok) return;
-      const data = await response.json();
-      setDogs(data.dogs || []);
-      setBookings(data.bookings || []);
-      setContracts([...(data.contracts || []).map((item: any) => ({ ...item, kind: "initial" })), ...(data.stayContracts || []).map((item: any) => ({ ...item, kind: "stay" }))]);
-    };
-    void load();
-  }, []);
-
+  const [contracts, setContracts] = useState<Contract[]>([]); const [dogs, setDogs] = useState<any[]>([]); const [bookings, setBookings] = useState<any[]>([]);
+  useEffect(() => { const load = async () => { const token = await auth.currentUser?.getIdToken(); const response = await fetch("/api/client/portal", { headers: { Authorization: `Bearer ${token}` } }); if (!response.ok) return; const data = await response.json(); setDogs(data.dogs || []); setBookings(data.bookings || []); setContracts([...(data.contracts || []).map((item: any) => ({ ...item, kind: "initial" })), ...(data.stayContracts || []).map((item: any) => ({ ...item, kind: "stay" }))]); }; void load(); }, []);
   const dogName = (id: string) => dogs.find((dog) => dog.id === id)?.nom || "Votre compagnon";
   const bookingFor = (contract: Contract) => bookings.find((booking) => booking.id === contract.bookingId);
-
-  return <main className="public-calm min-h-screen p-5 pb-28 sm:p-8">
-    <header className="mx-auto flex max-w-4xl justify-between"><Link href="/client" className="brand"><span>♧</span><b>CALM <em>by Angèle</em></b></Link><Link href="/client" className="marketing-login">Mon espace</Link></header>
-    <section className="mx-auto mt-10 max-w-4xl"><p className="eyebrow">Mes contrats</p><h1 className="gallery-title">Vos documents, en détail.</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-[#68776e]">Retrouvez chaque contrat, le séjour auquel il se rapporte, sa signature et le document à consulter.</p>
-      <div className="mt-7 space-y-4">{contracts.map((contract) => {
-        const booking = bookingFor(contract);
-        const signed = contract.statut === "signé";
-        const title = contract.kind === "initial" ? `Contrat initial · ${dogName(contract.dogId)}` : `Séjour de ${dogName(contract.dogId)}`;
-        const subtitle = contract.kind === "initial" ? "Document général pour l’accueil de votre compagnon." : `Du ${asDate(contract.dateDebut || booking?.dateDebut)} au ${asDate(contract.dateFin || booking?.dateFin)}`;
-        const action = contract.pdfUrl ? contract.pdfUrl : contract.kind === "stay" ? `/contrat-sejour/${contract.token}` : `/contrat/${contract.token}`;
-        return <article className="client-contract-card" key={contract.id}>
-          <div className={contract.kind === "stay" ? "client-contract-icon stay" : "client-contract-icon"}>{contract.kind === "stay" ? "□" : "✦"}</div>
-          <div className="client-contract-main"><p className="eyebrow">{contract.kind === "stay" ? "Contrat de séjour" : "Contrat initial"}</p><h2>{contract.contractNumber || title}</h2><p>{subtitle}</p>{contract.kind === "stay" && <div className="client-contract-details"><span>{booking?.typePrestation || "Garde"}</span>{booking?.heureArrivee && <span>Arrivée : {booking.heureArrivee}</span>}{booking?.heureDepart && <span>Départ : {booking.heureDepart}</span>}{(contract.prix || booking?.prix) && <span>{contract.prix || booking?.prix} €</span>}</div>}<div className="client-contract-status"><span className={signed ? "signed" : "pending"}>{signed ? "✓ Signé" : "À signer"}</span><span>{signed ? `Signé le ${asDate(contract.signedAt)}` : "En attente de votre signature"}</span></div></div>
-          <Link className="client-contract-action" href={action} target={contract.pdfUrl ? "_blank" : undefined}>{contract.pdfUrl ? "Consulter le PDF" : signed ? "Ouvrir le contrat" : "Lire et signer"} <span>→</span></Link>
-        </article>;
-      })}</div>
-      {!contracts.length && <p className="empty-state mt-7">Aucun contrat disponible pour le moment.</p>}
-    </section>
-  </main>;
+  const sorted = useMemo(() => [...contracts].sort((a, b) => timestamp(b.dateDebut || b.createdAt || b.signedAt) - timestamp(a.dateDebut || a.createdAt || a.signedAt)), [contracts]);
+  const pending = sorted.filter((item) => item.statut !== "signé"); const initial = sorted.filter((item) => item.kind === "initial" && item.statut === "signé"); const history = sorted.filter((item) => item.kind === "stay" && item.statut === "signé");
+  const Card = ({ contract, priority = false }: { contract: Contract; priority?: boolean }) => { const booking = bookingFor(contract); const signed = contract.statut === "signé"; const title = contract.kind === "initial" ? `Contrat initial · ${dogName(contract.dogId)}` : `Séjour de ${dogName(contract.dogId)}`; const subtitle = contract.kind === "initial" ? "Document général pour l’accueil de votre compagnon." : `Du ${asDate(contract.dateDebut || booking?.dateDebut)} au ${asDate(contract.dateFin || booking?.dateFin)}`; const action = contract.pdfUrl ? contract.pdfUrl : contract.kind === "stay" ? `/contrat-sejour/${contract.token}` : `/contrat/${contract.token}`; return <article className={`client-contract-card ${priority ? "client-contract-priority" : ""}`}><div className={contract.kind === "stay" ? "client-contract-icon stay" : "client-contract-icon"}>{contract.kind === "stay" ? "□" : "✦"}</div><div className="client-contract-main"><p className="eyebrow">{contract.kind === "stay" ? "Contrat de séjour" : "Contrat initial"}</p><h2>{contract.contractNumber || title}</h2><p>{subtitle}</p>{contract.kind === "stay" && <div className="client-contract-details"><span>{booking?.typePrestation || "Garde"}</span>{booking?.heureArrivee && <span>Arrivée : {booking.heureArrivee}</span>}{booking?.heureDepart && <span>Départ : {booking.heureDepart}</span>}{(contract.prix || booking?.prix) && <span>{contract.prix || booking?.prix} €</span>}</div>}<div className="client-contract-status"><span className={signed ? "signed" : "pending"}>{signed ? "✓ Signé" : "À signer"}</span><span>{signed ? `Signé le ${asDate(contract.signedAt)}` : "Votre signature est nécessaire"}</span></div></div><Link className="client-contract-action" href={action} target={contract.pdfUrl ? "_blank" : undefined}>{contract.pdfUrl ? "Consulter le PDF" : signed ? "Ouvrir le contrat" : "Lire et signer"} <span>→</span></Link></article>; };
+  return <main className="public-calm min-h-screen p-5 pb-28 sm:p-8"><header className="mx-auto flex max-w-4xl justify-between"><Link href="/client" className="brand"><span>♧</span><b>CALM <em>by Angèle</em></b></Link><Link href="/client" className="marketing-login">Mon espace</Link></header><section className="mx-auto mt-10 max-w-4xl"><p className="eyebrow">Mes contrats</p><h1 className="gallery-title">Vos documents, en détail.</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-[#68776e]">Vos documents importants en premier, puis votre historique de séjours.</p>{pending.length > 0 && <section className="client-contract-group client-contract-pending mt-7"><div className="client-contract-group-heading"><div><p className="eyebrow">À votre attention</p><h2>{pending.length} document{pending.length > 1 ? "s" : ""} à signer</h2></div><span>À faire maintenant</span></div><div className="space-y-3">{pending.map((contract) => <Card key={contract.id} contract={contract} priority />)}</div></section>}{initial.length > 0 && <section className="client-contract-group mt-7"><div className="client-contract-group-heading"><div><p className="eyebrow">Votre dossier</p><h2>Contrat initial</h2></div><span>{initial.length} document{initial.length > 1 ? "s" : ""}</span></div><div className="space-y-3">{initial.map((contract) => <Card key={contract.id} contract={contract} />)}</div></section>}{history.length > 0 && <details className="client-contract-history mt-7"><summary><div><p className="eyebrow">Vos archives</p><h2>Historique des séjours signés</h2><p>{history.length} contrat{history.length > 1 ? "s" : ""}, classés du plus récent au plus ancien.</p></div><span>Voir l’historique <b>⌄</b></span></summary><div className="mt-4 space-y-3">{history.map((contract) => <Card key={contract.id} contract={contract} />)}</div></details>}{!contracts.length && <p className="empty-state mt-7">Aucun contrat disponible pour le moment.</p>}</section></main>;
 }
